@@ -11,6 +11,8 @@ import type { PopupConfig } from '@/lib/types';
 
 const schema = z.object({
   name: z.string().trim().max(80).optional(),
+  business: z.string().trim().max(80).optional(),
+  rubro: z.string().trim().max(80).optional(),
   phone: z.string().trim().refine((v) => { const n = v.replace(/\D/g, '').length; return n >= 8 && n <= 15; }, 'Revisá el número'),
   email: z.string().trim().max(120).optional().refine((v) => !v || z.string().email().safeParse(v).success, 'Mail inválido'),
   website: z.string().optional(),
@@ -51,6 +53,8 @@ export async function POST(req: Request) {
     await createServiceClient().from('coupon_claims').insert({
       coupon_code: check.coupon.code,
       name: d.name || null,
+      business: d.business || null,
+      rubro: d.rubro || null,
       phone: d.phone,
       email: d.email || null,
       utm_source: a.utm_source ?? null,

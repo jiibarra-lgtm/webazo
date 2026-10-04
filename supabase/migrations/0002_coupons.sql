@@ -66,3 +66,8 @@ on conflict (code) do nothing;
 insert into public.settings (key, value) values
 ('popup', '{"enabled": true, "delay_seconds": 12, "coupon_code": "BIENVENIDA10", "eyebrow": "Solo para nuevos clientes", "title": "Tu primer webazo con descuento", "offer": "10% OFF", "text": "Dejanos tu WhatsApp y te mandamos el código para usar en cualquier pack.", "cta": "Quiero mi descuento"}')
 on conflict (key) do nothing;
+
+-- v3: datos del negocio en el reclamo del cupón
+alter table public.coupon_claims
+  add column if not exists business text,
+  add column if not exists rubro text;

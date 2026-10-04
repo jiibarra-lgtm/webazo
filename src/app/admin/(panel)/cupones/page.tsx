@@ -5,7 +5,7 @@ import { toWaPhone } from '@/lib/whatsapp';
 import type { Coupon, Pack, PopupConfig } from '@/lib/types';
 import { deleteCouponAction, saveCouponAction, savePopup } from '../../actions';
 
-type Claim = { id: string; created_at: string; coupon_code: string; name: string | null; phone: string; utm_campaign: string | null; converted: boolean };
+type Claim = { id: string; created_at: string; coupon_code: string; name: string | null; business: string | null; rubro: string | null; phone: string; utm_campaign: string | null; converted: boolean };
 
 function CouponForm({ c, packs }: { c?: Coupon; packs: Pick<Pack, 'slug' | 'name'>[] }) {
   const k = c?.id ?? 'new';
@@ -45,7 +45,7 @@ export default async function CuponesPage() {
     supabase.from('coupons').select('*').order('created_at', { ascending: false }),
     supabase.from('packs').select('slug, name').order('sort_order'),
     supabase.from('settings').select('value').eq('key', 'popup').maybeSingle(),
-    supabase.from('coupon_claims').select('id, created_at, coupon_code, name, phone, utm_campaign, converted').order('created_at', { ascending: false }).limit(100),
+    supabase.from('coupon_claims').select('id, created_at, coupon_code, name, business, rubro, phone, utm_campaign, converted').order('created_at', { ascending: false }).limit(100),
   ]);
   const popup = { ...DEFAULT_POPUP, ...((popupRow?.value as object) ?? {}) } as PopupConfig;
   const list = (coupons ?? []) as Coupon[];
@@ -58,7 +58,7 @@ export default async function CuponesPage() {
 
       <div className="card">
         <h2>Popup de bienvenida</h2>
-        <p className="muted" style={{ marginBottom: 14 }}>Aparece una vez por semana a cada visitante nuevo: a los segundos que elijas, cuando intenta irse (en compu) o al bajar el 60% de la página (en celu). Pide nombre y WhatsApp y entrega el código.</p>
+        <p className="muted" style={{ marginBottom: 14 }}>Aparece una vez por semana a cada visitante nuevo: a los segundos que elijas, cuando intenta irse (en compu) o al bajar el 60% de la página (en celu). Primero pregunta si quiere más clientes, después pide negocio, rubro, nombre y WhatsApp (mostrando una vista previa de su web) y entrega el código. Si lo cierra, queda una pestañita para reabrirlo. Si el cupón tiene límite de usos, muestra los cupos reales que quedan.</p>
         <form action={savePopup} className="form-grid">
           <div className="f"><label htmlFor="pc">Cupón que entrega</label>
             <select id="pc" name="coupon_code" defaultValue={popup.coupon_code}>
@@ -68,9 +68,9 @@ export default async function CuponesPage() {
           <div className="f"><label htmlFor="pd">Aparece a los (segundos)</label><input id="pd" name="delay_seconds" inputMode="numeric" defaultValue={popup.delay_seconds} /></div>
           <div className="f"><label htmlFor="pe">Texto chico de arriba</label><input id="pe" name="eyebrow" defaultValue={popup.eyebrow} /></div>
           <div className="f"><label htmlFor="po">Oferta grande</label><input id="po" name="offer" defaultValue={popup.offer} placeholder="10% OFF" /></div>
-          <div className="f full"><label htmlFor="pt">Título</label><input id="pt" name="title" defaultValue={popup.title} /></div>
+          <div className="f full"><label htmlFor="pt">Pregunta inicial</label><input id="pt" name="title" defaultValue={popup.title} /></div>
           <div className="f full"><label htmlFor="px">Texto</label><textarea id="px" name="text" defaultValue={popup.text} /></div>
-          <div className="f"><label htmlFor="pb">Texto del botón</label><input id="pb" name="cta" defaultValue={popup.cta} /></div>
+          <div className="f"><label htmlFor="pb">Botón del “Sí”</label><input id="pb" name="cta" defaultValue={popup.cta} /></div>
           <label className="check" style={{ alignSelf: 'end' }}><input type="checkbox" name="enabled" defaultChecked={popup.enabled} /> Popup activo</label>
           <div className="actions-row full"><button className="b b-orange" type="submit">Guardar popup</button></div>
         </form>
@@ -81,17 +81,18 @@ export default async function CuponesPage() {
         {cl.length ? (
           <div className="tbl-wrap">
             <table className="tbl">
-              <thead><tr><th>Fecha</th><th>Nombre</th><th>WhatsApp</th><th>Cupón</th><th>Campaña</th><th>Estado</th><th></th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Nombre</th><th>Negocio</th><th>WhatsApp</th><th>Cupón</th><th>Campaña</th><th>Estado</th><th></th></tr></thead>
               <tbody>
                 {cl.map((x) => (
                   <tr key={x.id}>
                     <td className="muted">{dateTime(x.created_at)}</td>
                     <td>{x.name ?? '—'}</td>
+                    <td>{x.business ?? '—'}{x.rubro && <div className="muted">{x.rubro}</div>}</td>
                     <td>{x.phone}</td>
                     <td>{x.coupon_code}</td>
                     <td>{x.utm_campaign ?? 'Directo'}</td>
                     <td>{x.converted ? <span className="pill ganado">Pidió presupuesto</span> : <span className="pill nuevo">Sin pedido</span>}</td>
-                    <td><a className="b b-wa" target="_blank" rel="noopener" href={`https://wa.me/${toWaPhone(x.phone)}?text=${encodeURIComponent(`Hola${x.name ? ' ' + x.name.split(' ')[0] : ''}! Soy de Webazo, vi que te llevaste el cupón ${x.coupon_code}. ¿Te ayudo a elegir el pack ideal para tu negocio?`)}`}>Escribir</a></td>
+                    <td><a className="b b-wa" target="_blank" rel="noopener" href={`https://wa.me/${toWaPhone(x.phone)}?text=${encodeURIComponent(`Hola${x.name ? ' ' + x.name.split(' ')[0] : ''}! Soy de Webazo, vi que te llevaste el cupón ${x.coupon_code}. ¿Te ayudo a elegir el pack ideal para ${x.business ?? 'tu negocio'}?`)}`}>Escribir</a></td>
                   </tr>
                 ))}
               </tbody>

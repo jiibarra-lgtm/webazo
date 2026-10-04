@@ -46,8 +46,8 @@ export const DEFAULT_POPUP: PopupConfig = {
   delay_seconds: 12,
   coupon_code: 'BIENVENIDA10',
   eyebrow: 'Solo para nuevos clientes',
-  title: 'Tu primer webazo con descuento',
+  title: '¿Querés más clientes este mes?',
   offer: '10% OFF',
-  text: 'Dejanos tu WhatsApp y te mandamos el código para usar en cualquier pack.',
-  cta: 'Quiero mi descuento',
+  text: 'Llevate un 10% de descuento en tu primer webazo y mirá cómo quedaría la web de tu negocio.',
+  cta: 'Sí, quiero mi descuento',
 };
