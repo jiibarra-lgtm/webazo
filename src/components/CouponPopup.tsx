@@ -5,14 +5,14 @@ import { getAttribution, getCookie, newEventId, setCookie, trackContact } from '
 import { couponLabel, readCoupon, saveCoupon } from '@/lib/coupon-client';
 import { RUBRO_NAMES } from '@/lib/rubros';
 import { whatsappUrl } from '@/lib/whatsapp';
-import type { ActiveCoupon, PopupConfig } from '@/lib/types';
+import type { ActiveCoupon, CurrencyConfig, PopupConfig } from '@/lib/types';
 import { Logo } from './Icons';
 
 const SEEN_COOKIE = 'wz_popup_seen';
 const CLOSED_COOKIE = 'wz_popup_closed';
 type Step = 'ask' | 'form' | 'done';
 
-export default function CouponPopup({ config }: { config: PopupConfig }) {
+export default function CouponPopup({ config, currency }: { config: PopupConfig; currency?: CurrencyConfig }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [teaser, setTeaser] = useState(false);
@@ -142,7 +142,7 @@ export default function CouponPopup({ config }: { config: PopupConfig }) {
 
   if (disabled) return null;
 
-  const offer = coupon ? couponLabel(coupon) : config.offer;
+  const offer = coupon ? couponLabel(coupon, currency) : config.offer;
   const bizName = business.trim() || 'Tu negocio';
   const waMsg = `Hola! Me llevé el cupón ${coupon?.code ?? config.coupon_code} (${offer}). Quiero la web para ${business.trim() || 'mi negocio'}${rubro ? ` (${rubro})` : ''}.`;
   const stepIndex = step === 'ask' ? 0 : step === 'form' ? 1 : 2;
@@ -214,7 +214,7 @@ export default function CouponPopup({ config }: { config: PopupConfig }) {
               {step === 'done' && coupon && (
                 <>
                   <span className="pop-eyebrow">¡Listo{business.trim() ? `, ${business.trim()}` : ''}!</span>
-                  <h2 id="pop-title">Tu código de {couponLabel(coupon)}</h2>
+                  <h2 id="pop-title">Tu código de {couponLabel(coupon, currency)}</h2>
                   <button type="button" className="pop-code" onClick={copy} data-autofocus aria-label={`Copiar código ${coupon.code}`}>
                     <span>{coupon.code}</span>
                     <small>{copied ? '¡Copiado!' : 'Tocá para copiar'}</small>

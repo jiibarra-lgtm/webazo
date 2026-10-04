@@ -1,9 +1,9 @@
 import LeadForm from './LeadForm';
 import WhatsAppLink from './WhatsAppLink';
 import { WhatsAppIcon } from './Icons';
-import type { Pack } from '@/lib/types';
+import type { CurrencyConfig, Pack } from '@/lib/types';
 
-export default function Contact({ packs, defaultRubro, waMessage = 'Hola! Quiero mi webazo' }: { packs: Pack[]; defaultRubro?: string; waMessage?: string }) {
+export default function Contact({ packs, defaultRubro, waMessage = 'Hola! Quiero mi webazo', currency }: { packs: Pack[]; defaultRubro?: string; waMessage?: string; currency?: CurrencyConfig }) {
   return (
     <section id="contacto" className="section contact" aria-labelledby="contact-title">
       <div className="wrap">
@@ -15,7 +15,7 @@ export default function Contact({ packs, defaultRubro, waMessage = 'Hola! Quiero
             <WhatsAppLink message={waMessage} label="contacto_alt" className="btn btn-dark"><WhatsAppIcon />Abrir WhatsApp</WhatsAppLink>
           </div>
         </div>
-        <LeadForm packs={packs.map((p) => ({ slug: p.slug, name: p.name, price: p.price_usd }))} defaultRubro={defaultRubro} />
+        <LeadForm packs={packs.map((p) => ({ slug: p.slug, name: p.name, price: p.price_usd }))} defaultRubro={defaultRubro} currency={currency} />
       </div>
     </section>
   );

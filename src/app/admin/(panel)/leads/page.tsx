@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/admin';
 import { STATUS_LABEL, dateTime } from '@/lib/format';
 import { LEAD_STATUSES, type Lead } from '@/lib/types';
 import { toWaPhone } from '@/lib/whatsapp';
+import { setLeadStatus } from '../../actions';
 
 type Props = { searchParams: Promise<{ status?: string; q?: string }> };
 
@@ -57,9 +58,18 @@ export default async function LeadsPage({ searchParams }: Props) {
                     <td><a href={`/admin/leads/${l.id}`}>{l.name}</a><div className="muted">{l.phone}</div></td>
                     <td>{l.business ?? '—'}</td>
                     <td>{l.rubro ?? '—'}</td>
-                    <td>{l.pack ?? '—'}{l.coupon_code && <div className="muted">🎟 {l.coupon_code}</div>}</td>
+                    <td>{l.pack ?? '—'}{l.coupon_code && <div className="muted">🎟 {l.coupon_code}</div>}{l.cart && <div className="muted">🛒 Carrito · USD {l.final_usd ?? '—'}</div>}</td>
                     <td>{l.utm_campaign ?? (l.utm_source ? l.utm_source : 'Directo')}{l.utm_content && <div className="muted">{l.utm_content}</div>}</td>
-                    <td><span className={`pill ${l.status}`}>{STATUS_LABEL[l.status]}</span></td>
+                    <td>
+                      <form action={setLeadStatus} className="inline-form">
+                        <input type="hidden" name="id" value={l.id} />
+                        <label className="sr-only" htmlFor={`st-${l.id}`}>Estado</label>
+                        <select id={`st-${l.id}`} name="status" defaultValue={l.status}>
+                          {LEAD_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                        </select>
+                        <button className="b b-line" type="submit">OK</button>
+                      </form>
+                    </td>
                     <td>
                       <a className="b b-wa" href={`https://wa.me/${toWaPhone(l.phone)}?text=${encodeURIComponent(`Hola ${l.name.split(' ')[0]}! Te escribo de Webazo por tu consulta.`)}`} target="_blank" rel="noopener">WhatsApp</a>
                     </td>

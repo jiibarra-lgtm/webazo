@@ -187,6 +187,110 @@ export async function savePopup(fd: FormData) {
   revalidateSite();
 }
 
+// ── Moneda ────────────────────────────────────────
+export async function saveCurrency(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const mode = str(fd, 'mode');
+  const source = str(fd, 'source');
+  await supabase.from('settings').upsert({
+    key: 'currency',
+    value: {
+      mode: mode === 'ARS' || mode === 'BOTH' ? mode : 'USD',
+      rate: num(fd, 'rate') ?? 1200,
+      source: source === 'oficial' || source === 'blue' ? source : 'manual',
+      updated_at: new Date().toISOString(),
+    },
+  });
+  revalidateSite();
+}
+
+/** Trae la cotización del día desde dolarapi.com (venta). */
+export async function refreshRate(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const source = str(fd, 'source') === 'blue' ? 'blue' : 'oficial';
+  try {
+    const res = await fetch(`https://dolarapi.com/v1/dolares/${source}`, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    const data = (await res.json()) as { venta?: number };
+    if (!data.venta) return;
+    const { data: row } = await supabase.from('settings').select('value').eq('key', 'currency').maybeSingle();
+    const current = (row?.value ?? {}) as Record<string, unknown>;
+    await supabase.from('settings').upsert({
+      key: 'currency',
+      value: { mode: 'USD', ...current, rate: data.venta, source, updated_at: new Date().toISOString() },
+    });
+    revalidateSite();
+  } catch {
+    /* si falla la API, queda la cotización anterior */
+  }
+}
+
+// ── Atajos (activar / desactivar) ─────────────────
+export async function toggleCoupon(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  if (!id) return;
+  await supabase.from('coupons').update({ active: fd.get('active') === 'true' }).eq('id', id);
+  revalidatePath('/admin', 'layout');
+}
+
+export async function togglePopup(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const { data } = await supabase.from('settings').select('value').eq('key', 'popup').maybeSingle();
+  const current = (data?.value ?? {}) as Record<string, unknown>;
+  await supabase.from('settings').upsert({ key: 'popup', value: { ...current, enabled: fd.get('enabled') === 'true' } });
+  revalidateSite();
+}
+
+export async function toggleBanner(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const { data } = await supabase.from('settings').select('value').eq('key', 'launch_banner').maybeSingle();
+  const current = (data?.value ?? {}) as Record<string, unknown>;
+  await supabase.from('settings').upsert({ key: 'launch_banner', value: { ...current, enabled: fd.get('enabled') === 'true' } });
+  revalidateSite();
+}
+
+export async function togglePack(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  if (!id) return;
+  await supabase.from('packs').update({ active: fd.get('active') === 'true' }).eq('id', id);
+  revalidateSite();
+}
+
+// ── Extras del carrito ────────────────────────────
+export async function saveExtra(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  const row = {
+    name: str(fd, 'name') ?? 'Extra',
+    description: str(fd, 'description'),
+    price_usd: num(fd, 'price_usd') ?? 0,
+    sort_order: num(fd, 'sort_order') ?? 0,
+    active: bool(fd, 'active'),
+  };
+  if (id) await supabase.from('extras').update(row).eq('id', id);
+  else {
+    const slug = row.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    await supabase.from('extras').insert({ ...row, slug: `${slug}-${Date.now().toString(36).slice(-4)}` });
+  }
+  revalidateSite();
+}
+
+export async function deleteExtra(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  if (id) await supabase.from('extras').delete().eq('id', id);
+  revalidateSite();
+}
+
+export async function toggleExtraAction(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  if (!id) return;
+  await supabase.from('extras').update({ active: fd.get('active') === 'true' }).eq('id', id);
+  revalidateSite();
+}
+
 // ── Sesión ────────────────────────────────────────────
 export async function signOut() {
   const supabase = await createClient();

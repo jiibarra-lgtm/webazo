@@ -4,15 +4,17 @@ import { FaqSection, FinalCta, Packs, Pains, RubrosGrid, Steps, Testimonials, fa
 import Contact from '@/components/Contact';
 import CouponBar from '@/components/CouponBar';
 import CouponPopup from '@/components/CouponPopup';
+import { CartDrawer } from '@/components/Cart';
 import WhatsAppLink from '@/components/WhatsAppLink';
 import { WhatsAppIcon } from '@/components/Icons';
 import { getPageData } from '@/lib/data';
+import { currencyCode, toArs } from '@/lib/money';
 import { env, contact } from '@/lib/env';
 
 export const revalidate = 300;
 
 export default async function Home() {
-  const { packs, faqs, testimonials, monthly, banner, popup } = await getPageData();
+  const { packs, faqs, testimonials, monthly, banner, popup, currency, extras } = await getPageData();
 
   const orgLd = {
     '@context': 'https://schema.org',
@@ -24,7 +26,7 @@ export default async function Home() {
     telephone: '+54 9 11 6025-4550',
     areaServed: ['Ciudad Autónoma de Buenos Aires', 'Gran Buenos Aires'],
     sameAs: [`https://www.instagram.com/${contact.instagram}`],
-    makesOffer: packs.map((p) => ({ '@type': 'Offer', name: `Pack ${p.name}`, price: p.price_usd, priceCurrency: 'USD' })),
+    makesOffer: packs.map((p) => ({ '@type': 'Offer', name: `Pack ${p.name}`, price: currency.mode === 'ARS' ? toArs(p.price_usd, currency) : p.price_usd, priceCurrency: currencyCode(currency) })),
   };
 
   return (
@@ -61,16 +63,17 @@ export default async function Home() {
             { title: 'Tu web no anda en el celu', text: 'Casi todos tus clientes te van a ver desde el teléfono. Si se ve mal, se van.' },
           ]}
         />
-        <Packs packs={packs} monthly={monthly} />
+        <Packs packs={packs} monthly={monthly} currency={currency} />
         <RubrosGrid />
         <Steps />
         <Testimonials items={testimonials} />
         <FaqSection faqs={faqs} />
-        <Contact packs={packs} />
+        <Contact packs={packs} currency={currency} />
         <FinalCta />
       </main>
       <Footer />
-      <CouponPopup config={popup} />
+      <CouponPopup config={popup} currency={currency} />
+      <CartDrawer packs={packs} extras={extras} monthly={monthly} currency={currency} />
       <FloatingWhatsApp />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }} />

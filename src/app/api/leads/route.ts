@@ -7,7 +7,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { getIp, hashIp } from '@/lib/request';
 import { toWaPhone } from '@/lib/whatsapp';
 import { applyDiscount, checkCoupon } from '@/lib/coupons';
-import { DEFAULT_PACKS } from '@/lib/defaults';
+import { DEFAULT_MONTHLY, DEFAULT_PACKS } from '@/lib/defaults';
 
 const optional = (max: number) => z.string().trim().max(max).optional().transform((v) => (v ? v : null));
 
@@ -20,6 +20,8 @@ const schema = z.object({
   pack: optional(40),
   message: optional(1000),
   coupon: z.string().max(40).optional(),
+  extras: z.array(z.string().max(60)).max(20).optional(),
+  monthly: z.boolean().optional(),
   website: z.string().optional(),
   eventId: z.string().max(80).optional(),
   fbp: z.string().max(200).nullable().optional(),
@@ -71,16 +73,30 @@ export async function POST(req: Request) {
   const userAgent = req.headers.get('user-agent');
   const eventId = d.eventId || `lead_${crypto.randomUUID()}`;
 
-  // Precio y cupón: siempre se recalculan en el servidor
-  let price: number | null = null;
-  if (d.pack) {
-    if (hasServiceRole) {
-      const { data: pk } = await createServiceClient().from('packs').select('price_usd').eq('slug', d.pack).maybeSingle();
-      price = pk ? Number(pk.price_usd) : null;
-    } else {
-      price = DEFAULT_PACKS.find((p) => p.slug === d.pack)?.price_usd ?? null;
-    }
+  // Precio, extras y cupón: siempre se recalculan en el servidor
+  let packName: string | null = null;
+  let packPrice: number | null = null;
+  let extrasRows: { slug: string; name: string; price_usd: number }[] = [];
+  let monthlyPrice = 0;
+  if (hasServiceRole) {
+    const svc = createServiceClient();
+    const [pk, ex, mo] = await Promise.all([
+      d.pack ? svc.from('packs').select('name, price_usd').eq('slug', d.pack).maybeSingle() : Promise.resolve({ data: null }),
+      d.extras?.length ? svc.from('extras').select('slug, name, price_usd').in('slug', d.extras).eq('active', true) : Promise.resolve({ data: [] }),
+      d.monthly ? svc.from('settings').select('value').eq('key', 'monthly').maybeSingle() : Promise.resolve({ data: null }),
+    ]);
+    if (pk.data) { packName = pk.data.name; packPrice = Number(pk.data.price_usd); }
+    extrasRows = ((ex.data ?? []) as { slug: string; name: string; price_usd: number }[]).map((e) => ({ ...e, price_usd: Number(e.price_usd) }));
+    if (d.monthly) monthlyPrice = Number((mo.data?.value as { price_usd?: number } | undefined)?.price_usd ?? DEFAULT_MONTHLY.price_usd);
+  } else if (d.pack) {
+    const p = DEFAULT_PACKS.find((x) => x.slug === d.pack);
+    packName = p?.name ?? null;
+    packPrice = p?.price_usd ?? null;
+    if (d.monthly) monthlyPrice = DEFAULT_MONTHLY.price_usd;
   }
+  const extrasTotal = extrasRows.reduce((sum, e) => sum + e.price_usd, 0);
+  const price: number | null = packPrice != null || extrasTotal > 0 ? (packPrice ?? 0) + extrasTotal : null;
+
   let couponCode: string | null = null;
   let discount: number | null = null;
   let final: number | null = price;
@@ -95,6 +111,9 @@ export async function POST(req: Request) {
       }
     }
   }
+  const cart = d.extras !== undefined || d.monthly !== undefined
+    ? { pack: d.pack ? { slug: d.pack, name: packName, price_usd: packPrice } : null, extras: extrasRows, monthly_usd: monthlyPrice || null }
+    : null;
 
   if (hasServiceRole) {
     const { error } = await createServiceClient().from('leads').insert({
@@ -117,6 +136,8 @@ export async function POST(req: Request) {
       price_usd: price,
       discount_usd: discount,
       final_usd: final,
+      cart,
+      monthly_usd: monthlyPrice || null,
       event_id: eventId,
       user_agent: userAgent?.slice(0, 300) ?? null,
       ip_hash: hashIp(ip),
@@ -151,7 +172,7 @@ export async function POST(req: Request) {
     notifyByEmail(d, a),
   ]);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, totals: { price, discount, final, monthly: monthlyPrice || null, coupon: couponCode } });
 }
 
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

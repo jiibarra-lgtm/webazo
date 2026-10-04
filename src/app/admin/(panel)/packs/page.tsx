@@ -1,7 +1,9 @@
 import { requireAdmin } from '@/lib/admin';
-import { DEFAULT_BANNER, DEFAULT_MONTHLY } from '@/lib/defaults';
-import type { LaunchBanner, Monthly, Pack } from '@/lib/types';
-import { deletePack, savePack, saveSettings } from '../../actions';
+import { DEFAULT_BANNER, DEFAULT_CURRENCY, DEFAULT_MONTHLY } from '@/lib/defaults';
+import { money, toArs } from '@/lib/money';
+import Toggle from '../Toggle';
+import type { CurrencyConfig, Extra, LaunchBanner, Monthly, Pack } from '@/lib/types';
+import { deleteExtra, deletePack, refreshRate, saveCurrency, saveExtra, savePack, saveSettings, toggleExtraAction, togglePack } from '../../actions';
 
 function PackForm({ p }: { p?: Pack }) {
   const k = p?.id ?? 'new';
@@ -28,21 +30,80 @@ function PackForm({ p }: { p?: Pack }) {
 
 export default async function PacksPage() {
   const { supabase } = await requireAdmin();
-  const [{ data: packs }, { data: settings }] = await Promise.all([
+  const [{ data: packs }, { data: settings }, { data: extrasData }] = await Promise.all([
     supabase.from('packs').select('*').order('sort_order'),
-    supabase.from('settings').select('*').in('key', ['monthly', 'launch_banner']),
+    supabase.from('settings').select('*').in('key', ['monthly', 'launch_banner', 'currency']),
+    supabase.from('extras').select('*').order('sort_order'),
   ]);
+  const extras = ((extrasData ?? []) as Extra[]).map((e) => ({ ...e, price_usd: Number(e.price_usd) }));
   const monthly = { ...DEFAULT_MONTHLY, ...(settings?.find((s) => s.key === 'monthly')?.value ?? {}) } as Monthly;
   const banner = { ...DEFAULT_BANNER, ...(settings?.find((s) => s.key === 'launch_banner')?.value ?? {}) } as LaunchBanner;
+  const currency = { ...DEFAULT_CURRENCY, ...(settings?.find((s) => s.key === 'currency')?.value ?? {}) } as CurrencyConfig;
+  const list = ((packs ?? []) as Pack[]).map((p) => ({ ...p, price_usd: Number(p.price_usd), price_before_usd: p.price_before_usd == null ? null : Number(p.price_before_usd) }));
 
   return (
     <>
-      <div className="adm-head"><div><h1>Packs y precios</h1><p>Los cambios se ven en la web en unos segundos.</p></div></div>
+      <div className="adm-head"><div><h1>Packs y precios</h1><p>Los precios se cargan en dólares. Elegí abajo cómo se muestran en la web.</p></div></div>
 
-      {(packs as Pack[] | null)?.map((p) => (
+      <div className="card">
+        <h2>Moneda de la web</h2>
+        <form action={saveCurrency} className="form-grid">
+          <fieldset className="f full" style={{ border: 'none', padding: 0, margin: 0 }}>
+            <legend style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>Mostrar precios en</legend>
+            <div className="radio-row">
+              <label><input type="radio" name="mode" value="USD" defaultChecked={currency.mode === 'USD'} /> Dólares (USD 80)</label>
+              <label><input type="radio" name="mode" value="ARS" defaultChecked={currency.mode === 'ARS'} /> Pesos ($ 96.000)</label>
+              <label><input type="radio" name="mode" value="BOTH" defaultChecked={currency.mode === 'BOTH'} /> Ambos (USD 80 ≈ $ 96.000)</label>
+            </div>
+          </fieldset>
+          <div className="f"><label htmlFor="rate">Cotización (pesos por dólar)</label><input id="rate" name="rate" inputMode="decimal" defaultValue={currency.rate} /></div>
+          <div className="f">
+            <label htmlFor="source">Tipo de dólar</label>
+            <select id="source" name="source" defaultValue={currency.source}>
+              <option value="manual">Manual</option>
+              <option value="oficial">Oficial</option>
+              <option value="blue">Blue</option>
+            </select>
+          </div>
+          <div className="actions-row full">
+            <button className="b b-orange" type="submit">Guardar moneda</button>
+            {currency.updated_at && <span className="muted">Última actualización: {new Date(currency.updated_at).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })}</span>}
+          </div>
+        </form>
+        <form action={refreshRate} className="actions-row" style={{ marginTop: 12 }}>
+          <select name="source" defaultValue={currency.source === 'blue' ? 'blue' : 'oficial'} className="b b-line" aria-label="Tipo de dólar a consultar">
+            <option value="oficial">Dólar oficial</option>
+            <option value="blue">Dólar blue</option>
+          </select>
+          <button className="b b-dark" type="submit">Traer cotización de hoy</button>
+          <span className="muted">Usa el valor de venta de dolarapi.com.</span>
+        </form>
+      </div>
+
+      <div className="card">
+        <h2>Resumen de packs</h2>
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead><tr><th>Pack</th><th>Precio USD</th><th>En pesos</th><th>Así se ve en la web</th><th>Visible</th></tr></thead>
+            <tbody>
+              {list.map((p) => (
+                <tr key={p.id}>
+                  <td><strong>{p.name}</strong>{p.featured && <div className="muted">Destacado</div>}</td>
+                  <td>USD {p.price_usd}</td>
+                  <td>$ {toArs(p.price_usd, currency).toLocaleString('es-AR')}</td>
+                  <td>{money(p.price_usd, currency)}{currency.mode === 'BOTH' && <div className="muted">≈ $ {toArs(p.price_usd, currency).toLocaleString('es-AR')}</div>}</td>
+                  <td><Toggle action={togglePack} on={p.active} field="active" id={p.id} labelOn="Visible" labelOff="Oculto" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {list.map((p) => (
         <div className="card" key={p.id}>
           <h2>{p.name} {!p.active && <span className="pill perdido">Oculto</span>}</h2>
-          <PackForm p={{ ...p, price_usd: Number(p.price_usd), price_before_usd: p.price_before_usd == null ? null : Number(p.price_before_usd) }} />
+          <PackForm p={p} />
           <form action={deletePack} style={{ marginTop: 10 }}>
             <input type="hidden" name="id" value={p.id} />
             <button className="b b-danger" type="submit">Eliminar pack</button>
@@ -51,6 +112,39 @@ export default async function PacksPage() {
       ))}
 
       <div className="card"><h2>Nuevo pack</h2><PackForm /></div>
+
+      <div className="card">
+        <h2>Extras del carrito</h2>
+        <p className="muted" style={{ marginBottom: 14 }}>Servicios que el cliente puede sumar a su pack desde el carrito. Solo se muestran los activos.</p>
+        {extras.map((e) => (
+          <div key={e.id} style={{ borderTop: '1px solid var(--line)', padding: '14px 0' }}>
+            <form action={saveExtra} className="form-grid">
+              <input type="hidden" name="id" value={e.id} />
+              <div className="f"><label htmlFor={`en-${e.id}`}>Nombre</label><input id={`en-${e.id}`} name="name" defaultValue={e.name} /></div>
+              <div className="f"><label htmlFor={`ep-${e.id}`}>Precio (USD)</label><input id={`ep-${e.id}`} name="price_usd" inputMode="decimal" defaultValue={e.price_usd} /></div>
+              <div className="f full"><label htmlFor={`ed-${e.id}`}>Descripción</label><input id={`ed-${e.id}`} name="description" defaultValue={e.description ?? ''} /></div>
+              <div className="f"><label htmlFor={`eo-${e.id}`}>Orden</label><input id={`eo-${e.id}`} name="sort_order" inputMode="numeric" defaultValue={e.sort_order} /></div>
+              <label className="check" style={{ alignSelf: 'end' }}><input type="checkbox" name="active" defaultChecked={e.active} /> Visible en el carrito</label>
+              <div className="actions-row full"><button className="b b-orange" type="submit">Guardar</button></div>
+            </form>
+            <div className="actions-row" style={{ marginTop: 8 }}>
+              <Toggle action={toggleExtraAction} on={e.active} field="active" id={e.id} labelOn="Visible" labelOff="Oculto" />
+              <form action={deleteExtra}><input type="hidden" name="id" value={e.id} /><button className="b b-danger" type="submit">Eliminar</button></form>
+            </div>
+          </div>
+        ))}
+        <div style={{ borderTop: '1px solid var(--line)', paddingTop: 14 }}>
+          <h3 style={{ fontSize: 16, marginBottom: 10 }}>Nuevo extra</h3>
+          <form action={saveExtra} className="form-grid">
+            <div className="f"><label htmlFor="en-new">Nombre</label><input id="en-new" name="name" required /></div>
+            <div className="f"><label htmlFor="ep-new">Precio (USD)</label><input id="ep-new" name="price_usd" inputMode="decimal" required /></div>
+            <div className="f full"><label htmlFor="ed-new">Descripción</label><input id="ed-new" name="description" /></div>
+            <div className="f"><label htmlFor="eo-new">Orden</label><input id="eo-new" name="sort_order" inputMode="numeric" defaultValue={extras.length + 1} /></div>
+            <label className="check" style={{ alignSelf: 'end' }}><input type="checkbox" name="active" defaultChecked /> Visible en el carrito</label>
+            <div className="actions-row full"><button className="b b-orange" type="submit">Agregar extra</button></div>
+          </form>
+        </div>
+      </div>
 
       <div className="card">
         <h2>Mantenimiento mensual y banner</h2>

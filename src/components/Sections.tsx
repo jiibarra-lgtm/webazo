@@ -1,10 +1,12 @@
 import { CheckIcon, WhatsAppIcon } from './Icons';
 import WhatsAppLink from './WhatsAppLink';
 import PackCouponPrice from './PackCouponPrice';
+import { AddToCartButton } from './Cart';
 import { RUBROS } from '@/lib/rubros';
-import type { Faq, Monthly, Pack, Testimonial } from '@/lib/types';
+import type { CurrencyConfig, Faq, Monthly, Pack, Testimonial } from '@/lib/types';
+import { money, moneyAlt, moneyParts, priceNote } from '@/lib/money';
+import { DEFAULT_CURRENCY } from '@/lib/defaults';
 
-const fmt = (n: number) => n.toLocaleString('es-AR', { maximumFractionDigits: 0 });
 
 export function Pains({ title, lead, items }: { title: string; lead?: string; items: { title: string; text: string }[] }) {
   return (
@@ -24,7 +26,7 @@ export function Pains({ title, lead, items }: { title: string; lead?: string; it
   );
 }
 
-export function Packs({ packs, monthly, recommended, rubroName }: { packs: Pack[]; monthly: Monthly; recommended?: string; rubroName?: string }) {
+export function Packs({ packs, monthly, recommended, rubroName, currency = DEFAULT_CURRENCY }: { packs: Pack[]; monthly: Monthly; recommended?: string; rubroName?: string; currency?: CurrencyConfig }) {
   return (
     <section id="packs" className="section" aria-labelledby="packs-title">
       <div className="wrap">
@@ -47,18 +49,20 @@ export function Packs({ packs, monthly, recommended, rubroName }: { packs: Pack[
                 <div className="price">
                   <span className="from">desde</span>
                   <div className="row">
-                    <span className="amount"><small>USD</small> {fmt(p.price_usd)}</span>
-                    {p.price_before_usd && p.price_before_usd > p.price_usd && <s>USD {fmt(p.price_before_usd)}</s>}
+                    <span className="amount"><small>{moneyParts(p.price_usd, currency).symbol}</small> {moneyParts(p.price_usd, currency).amount}</span>
+                    {p.price_before_usd && p.price_before_usd > p.price_usd && <s>{money(p.price_before_usd, currency)}</s>}
                   </div>
+                  {moneyAlt(p.price_usd, currency) && <span className="from">{moneyAlt(p.price_usd, currency)}</span>}
                   {p.price_note && <span className="note">{p.price_note}</span>}
-                  <PackCouponPrice slug={p.slug} price={p.price_usd} />
+                  <PackCouponPrice slug={p.slug} price={p.price_usd} currency={currency} />
                 </div>
                 <ul className="includes">
                   {p.features.map((f) => <li key={f}><CheckIcon />{f}</li>)}
                 </ul>
-                <WhatsAppLink message={msg} label={`pack_${p.slug}`} className={`btn ${p.featured ? 'btn-orange' : 'btn-dark'}`}>
-                  {p.cta_label || `Quiero el ${p.name}`}
-                </WhatsAppLink>
+                <div className="pack-actions">
+                  <AddToCartButton slug={p.slug} label={p.cta_label || `Quiero el ${p.name}`} className={`btn ${p.featured ? 'btn-orange' : 'btn-dark'}`} />
+                  <WhatsAppLink message={msg} label={`pack_${p.slug}`} className="pack-wa">o consultá por WhatsApp</WhatsAppLink>
+                </div>
               </article>
             );
           })}
@@ -68,9 +72,9 @@ export function Packs({ packs, monthly, recommended, rubroName }: { packs: Pack[
             <h3>{monthly.title}</h3>
             <p>{monthly.description}</p>
           </div>
-          <span className="amount">USD {fmt(monthly.price_usd)}/mes</span>
+          <span className="amount">{money(monthly.price_usd, currency)}/mes</span>
         </div>
-        <p className="small-note">Precios en dólares de referencia, pagables en pesos al valor del día.</p>
+        <p className="small-note">{priceNote(currency)}</p>
       </div>
     </section>
   );

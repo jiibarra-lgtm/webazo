@@ -1,4 +1,4 @@
-import type { Faq, LaunchBanner, Monthly, Pack, PopupConfig } from './types';
+import type { CurrencyConfig, Faq, LaunchBanner, Monthly, Pack, PopupConfig } from './types';
 
 // Contenido de respaldo: la web funciona aunque Supabase no esté configurado.
 export const DEFAULT_PACKS: Pack[] = [
@@ -51,3 +51,5 @@ export const DEFAULT_POPUP: PopupConfig = {
   text: 'Llevate un 10% de descuento en tu primer webazo y mirá cómo quedaría la web de tu negocio.',
   cta: 'Sí, quiero mi descuento',
 };
+
+export const DEFAULT_CURRENCY: CurrencyConfig = { mode: 'USD', rate: 1200, source: 'manual', updated_at: null };

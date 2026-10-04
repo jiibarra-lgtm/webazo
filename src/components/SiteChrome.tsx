@@ -1,5 +1,6 @@
 import { Logo, WhatsAppIcon } from './Icons';
 import WhatsAppLink from './WhatsAppLink';
+import { CartButton } from './Cart';
 import { contact } from '@/lib/env';
 import type { LaunchBanner } from '@/lib/types';
 
@@ -17,6 +18,7 @@ export function Header({ waMessage = 'Hola! Quiero mi webazo', base = '' }: { wa
           <a href={`${base}#packs`}>Packs</a>
           <a href="/#rubros">Rubros</a>
           <a href={`${base}#preguntas`}>Preguntas</a>
+          <CartButton />
           <WhatsAppLink message={waMessage} label="header" className="btn btn-orange">Escribinos</WhatsAppLink>
         </nav>
       </div>

@@ -1,6 +1,9 @@
 import { requireAdmin } from '@/lib/admin';
 import { STATUS_LABEL, dateTime, usd } from '@/lib/format';
-import type { Lead } from '@/lib/types';
+import type { CurrencyConfig, Lead, LaunchBanner, PopupConfig } from '@/lib/types';
+import { DEFAULT_BANNER, DEFAULT_CURRENCY, DEFAULT_POPUP } from '@/lib/defaults';
+import { toggleBanner, togglePopup } from '../actions';
+import Toggle from './Toggle';
 
 function groupCount<T>(rows: T[], key: (r: T) => string | null | undefined) {
   const m = new Map<string, number>();
@@ -31,13 +34,23 @@ export default async function Dashboard() {
   const since30 = new Date(Date.now() - 30 * 864e5).toISOString();
   const since7 = new Date(Date.now() - 7 * 864e5).toISOString();
 
-  const [{ data: leads30 }, { count: clicks30 }, { data: recent }, { data: allWon }, { count: claims30 }] = await Promise.all([
+  const [{ data: leads30 }, { count: clicks30 }, { data: recent }, { data: allWon }, { count: claims30 }, { data: settings }, { data: coupons }, { data: packs }] = await Promise.all([
     supabase.from('leads').select('id, status, utm_campaign, utm_source, utm_content, rubro, pack, created_at').gte('created_at', since30),
     supabase.from('clicks').select('id', { count: 'exact', head: true }).gte('created_at', since30),
     supabase.from('leads').select('*').order('created_at', { ascending: false }).limit(8),
     supabase.from('leads').select('value_usd').eq('status', 'ganado'),
     supabase.from('coupon_claims').select('id', { count: 'exact', head: true }).gte('created_at', since30),
+    supabase.from('settings').select('key, value').in('key', ['popup', 'launch_banner', 'currency']),
+    supabase.from('coupons').select('active, expires_at, max_uses, uses'),
+    supabase.from('packs').select('active'),
   ]);
+  const get = (k: string) => settings?.find((x) => x.key === k)?.value ?? {};
+  const popup = { ...DEFAULT_POPUP, ...get('popup') } as PopupConfig;
+  const banner = { ...DEFAULT_BANNER, ...get('launch_banner') } as LaunchBanner;
+  const currency = { ...DEFAULT_CURRENCY, ...get('currency') } as CurrencyConfig;
+  const activeCoupons = (coupons ?? []).filter((c) => c.active && !(c.expires_at && new Date(c.expires_at) < new Date()) && !(c.max_uses != null && c.uses >= c.max_uses)).length;
+  const visiblePacks = (packs ?? []).filter((p) => p.active).length;
+  const currencyLabel = currency.mode === 'ARS' ? 'Pesos' : currency.mode === 'BOTH' ? 'Dólares y pesos' : 'Dólares';
 
   const l30 = (leads30 ?? []) as Pick<Lead, 'id' | 'status' | 'utm_campaign' | 'utm_source' | 'utm_content' | 'rubro' | 'pack' | 'created_at'>[];
   const l7 = l30.filter((l) => l.created_at >= since7).length;
@@ -60,6 +73,40 @@ export default async function Dashboard() {
         <div className="kpi"><span>Sin contactar</span><strong>{nuevos}</strong><small>Respondé rápido</small></div>
         <div className="kpi"><span>Tasa de cierre</span><strong>{tasa}%</strong><small>{ganados} ganados</small></div>
         <div className="kpi"><span>Facturado (total)</span><strong>{usd(facturado)}</strong><small>Leads ganados</small></div>
+      </div>
+
+      <div className="card">
+        <h2>Estado de la web</h2>
+        <div className="status-grid">
+          <div className="status">
+            <h3>Popup de cupón</h3>
+            <Toggle action={togglePopup} on={popup.enabled} field="enabled" labelOn="Mostrándose" labelOff="Apagado" />
+            <p>Entrega {popup.coupon_code}</p>
+            <a href="/admin/cupones">Editar popup</a>
+          </div>
+          <div className="status">
+            <h3>Banner de lanzamiento</h3>
+            <Toggle action={toggleBanner} on={banner.enabled} field="enabled" labelOn="Visible" labelOff="Oculto" />
+            <p>{banner.text || 'Sin texto'}</p>
+            <a href="/admin/packs">Editar banner</a>
+          </div>
+          <div className="status">
+            <h3>Cupones activos</h3>
+            <span className="big">{activeCoupons}</span>
+            <a href="/admin/cupones">Ver cupones</a>
+          </div>
+          <div className="status">
+            <h3>Packs visibles</h3>
+            <span className="big">{visiblePacks}</span>
+            <a href="/admin/packs">Ver packs</a>
+          </div>
+          <div className="status">
+            <h3>Moneda</h3>
+            <span className="big">{currencyLabel}</span>
+            <p>Cotización: $ {Math.round(currency.rate).toLocaleString('es-AR')}{currency.source !== 'manual' ? ` (${currency.source})` : ''}</p>
+            <a href="/admin/packs">Cambiar moneda</a>
+          </div>
+        </div>
       </div>
 
       <div className="grid-2">

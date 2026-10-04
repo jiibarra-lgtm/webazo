@@ -3,7 +3,8 @@ import { DEFAULT_POPUP } from '@/lib/defaults';
 import { dateTime } from '@/lib/format';
 import { toWaPhone } from '@/lib/whatsapp';
 import type { Coupon, Pack, PopupConfig } from '@/lib/types';
-import { deleteCouponAction, saveCouponAction, savePopup } from '../../actions';
+import { deleteCouponAction, saveCouponAction, savePopup, toggleCoupon, togglePopup } from '../../actions';
+import Toggle from '../Toggle';
 
 type Claim = { id: string; created_at: string; coupon_code: string; name: string | null; business: string | null; rubro: string | null; phone: string; utm_campaign: string | null; converted: boolean };
 
@@ -55,6 +56,52 @@ export default async function CuponesPage() {
   return (
     <>
       <div className="adm-head"><div><h1>Cupones</h1><p>Popup de bienvenida, códigos de descuento y contactos que reclamaron un cupón.</p></div></div>
+
+      <div className="card">
+        <h2>Vista rápida</h2>
+        <div className="status-grid" style={{ marginBottom: 18 }}>
+          <div className="status">
+            <h3>Popup de bienvenida</h3>
+            <Toggle action={togglePopup} on={popup.enabled} field="enabled" labelOn="Mostrándose" labelOff="Apagado" />
+            <p>Entrega <strong>{popup.coupon_code}</strong> · aparece a los {popup.delay_seconds} s</p>
+          </div>
+          <div className="status">
+            <h3>Cupones activos</h3>
+            <span className="big">{list.filter((c) => c.active && !(c.expires_at && new Date(c.expires_at) < new Date()) && !(c.max_uses != null && c.uses >= c.max_uses)).length}</span>
+            <p>de {list.length} creados</p>
+          </div>
+          <div className="status">
+            <h3>Reclamos (últimos 100)</h3>
+            <span className="big">{cl.length}</span>
+            <p>{cl.filter((x) => x.converted).length} pidieron presupuesto después</p>
+          </div>
+        </div>
+        {list.length ? (
+          <div className="tbl-wrap">
+            <table className="tbl">
+              <thead><tr><th>Código</th><th>Descuento</th><th>Aplica a</th><th>Usos</th><th>Vence</th><th>Estado</th><th>Activo</th></tr></thead>
+              <tbody>
+                {list.map((c) => {
+                  const expired = !!(c.expires_at && new Date(c.expires_at) < new Date());
+                  const full = c.max_uses != null && c.uses >= c.max_uses;
+                  const state = !c.active ? ['perdido', 'Desactivado'] : expired ? ['perdido', 'Vencido'] : full ? ['presupuesto', 'Agotado'] : ['ganado', 'Funcionando'];
+                  return (
+                    <tr key={c.id}>
+                      <td><strong>{c.code}</strong>{popup.coupon_code === c.code && <div className="muted">Lo entrega el popup</div>}</td>
+                      <td>{c.type === 'percent' ? `${c.value}%` : `USD ${c.value}`}</td>
+                      <td>{c.packs.length ? c.packs.join(', ') : 'Todos los packs'}</td>
+                      <td>{c.uses}{c.max_uses != null ? ` / ${c.max_uses}` : ''}</td>
+                      <td>{c.expires_at ? new Date(c.expires_at).toLocaleDateString('es-AR') : 'Sin vencimiento'}</td>
+                      <td><span className={`pill ${state[0]}`}>{state[1]}</span></td>
+                      <td><Toggle action={toggleCoupon} on={c.active} field="active" id={c.id} /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="empty">Todavía no hay cupones.</p>}
+      </div>
 
       <div className="card">
         <h2>Popup de bienvenida</h2>

@@ -57,6 +57,8 @@ export type Lead = {
   price_usd: number | null;
   discount_usd: number | null;
   final_usd: number | null;
+  monthly_usd: number | null;
+  cart: { pack: { slug: string; name: string | null; price_usd: number | null } | null; extras: { slug: string; name: string; price_usd: number }[]; monthly_usd: number | null } | null;
 };
 
 export type Attribution = {
@@ -102,3 +104,17 @@ export type ActiveCoupon = {
   packs: string[];
   expires_at: string | null;
 };
+
+export type CurrencyMode = 'USD' | 'ARS' | 'BOTH';
+export type CurrencyConfig = {
+  mode: CurrencyMode;      // USD, ARS o ambos
+  rate: number;            // pesos por dólar
+  source: 'manual' | 'oficial' | 'blue';
+  updated_at: string | null;
+};
+
+export type Extra = { id: string; slug: string; name: string; description: string | null; price_usd: number; sort_order: number; active: boolean };
+
+export type CartState = { pack: string | null; extras: string[]; monthly: boolean };
+
+export type CartLine = { slug: string; name: string; price_usd: number; kind: 'pack' | 'extra' };

@@ -1,12 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { COUPON_EVENT, couponApplies, discounted, readCoupon } from '@/lib/coupon-client';
-import type { ActiveCoupon } from '@/lib/types';
+import type { ActiveCoupon, CurrencyConfig } from '@/lib/types';
+import { money } from '@/lib/money';
 
-const fmt = (n: number) => n.toLocaleString('es-AR', { maximumFractionDigits: 2 });
 
 /** Si hay un cupón activo, muestra el precio final y cuánto ahorra. */
-export default function PackCouponPrice({ slug, price }: { slug: string; price: number }) {
+export default function PackCouponPrice({ slug, price, currency }: { slug: string; price: number; currency: CurrencyConfig }) {
   const [c, setC] = useState<ActiveCoupon | null>(null);
   useEffect(() => {
     const sync = () => setC(readCoupon());
@@ -18,8 +18,8 @@ export default function PackCouponPrice({ slug, price }: { slug: string; price: 
   const { discount, final } = discounted(price, c);
   return (
     <div className="coupon-price">
-      <span>Con <strong>{c.code}</strong>: <b>USD {fmt(final)}</b></span>
-      <small>Ahorrás USD {fmt(discount)}</small>
+      <span>Con <strong>{c.code}</strong>: <b>{money(final, currency)}</b></span>
+      <small>Ahorrás {money(discount, currency)}</small>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { getCookie, setCookie } from './tracking';
-import type { ActiveCoupon } from './types';
+import type { ActiveCoupon, CurrencyConfig } from './types';
+import { money } from './money';
 
 export const COUPON_COOKIE = 'wz_coupon';
 export const COUPON_EVENT = 'wz:coupon';
@@ -27,8 +28,9 @@ export function clearCoupon() {
   window.dispatchEvent(new CustomEvent(COUPON_EVENT));
 }
 
-export function couponLabel(c: ActiveCoupon) {
-  return c.type === 'percent' ? `${c.value}% OFF` : `USD ${c.value} OFF`;
+export function couponLabel(c: ActiveCoupon, currency?: CurrencyConfig) {
+  if (c.type === 'percent') return `${c.value}% OFF`;
+  return `${currency ? money(c.value, currency) : `USD ${c.value}`} OFF`;
 }
 
 export function couponApplies(c: ActiveCoupon, packSlug: string) {

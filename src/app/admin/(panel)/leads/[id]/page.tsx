@@ -58,6 +58,24 @@ export default async function LeadDetail({ params }: Props) {
         </div>
       </div>
 
+      {l.cart && (
+        <div className="card">
+          <h2>Propuesta armada en el carrito</h2>
+          <div className="tbl-wrap">
+            <table className="tbl">
+              <tbody>
+                {l.cart.pack && <tr><td>Pack {l.cart.pack.name ?? l.cart.pack.slug}</td><td>USD {l.cart.pack.price_usd ?? '—'}</td></tr>}
+                {l.cart.extras.map((x) => <tr key={x.slug}><td>{x.name}</td><td>USD {x.price_usd}</td></tr>)}
+                <tr><td><strong>Subtotal</strong></td><td><strong>USD {l.price_usd ?? '—'}</strong></td></tr>
+                {l.discount_usd ? <tr><td>Cupón {l.coupon_code}</td><td>− USD {l.discount_usd}</td></tr> : null}
+                <tr><td><strong>Total</strong></td><td><strong>USD {l.final_usd ?? '—'}</strong></td></tr>
+                {l.monthly_usd ? <tr><td>Mantenimiento</td><td>USD {l.monthly_usd}/mes</td></tr> : null}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <h2>Seguimiento</h2>
         <form action={updateLead} className="form-grid">

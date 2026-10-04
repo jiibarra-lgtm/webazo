@@ -6,6 +6,7 @@ import { FaqSection, FeatureList, FinalCta, Packs, Pains, Steps, Testimonials } 
 import Contact from '@/components/Contact';
 import CouponBar from '@/components/CouponBar';
 import CouponPopup from '@/components/CouponPopup';
+import { CartDrawer } from '@/components/Cart';
 import WhatsAppLink from '@/components/WhatsAppLink';
 import { WhatsAppIcon } from '@/components/Icons';
 import { RUBROS, getRubro } from '@/lib/rubros';
@@ -42,7 +43,7 @@ export default async function RubroPage({ params }: Params) {
   const { rubro } = await params;
   const r = getRubro(rubro);
   if (!r) notFound();
-  const { packs, faqs, testimonials, monthly, banner, popup } = await getPageData();
+  const { packs, faqs, testimonials, monthly, banner, popup, currency, extras } = await getPageData();
   const rubroTestimonials = testimonials.filter((t) => !t.rubro || t.rubro === r.name);
 
   return (
@@ -71,15 +72,16 @@ export default async function RubroPage({ params }: Params) {
         </section>
         <Pains title="¿Te pasa esto?" items={r.pains} />
         <FeatureList title="Lo que incluye tu webazo" items={r.features} />
-        <Packs packs={packs} monthly={monthly} recommended={r.recommendedPack} rubroName={r.name} />
+        <Packs packs={packs} monthly={monthly} recommended={r.recommendedPack} rubroName={r.name} currency={currency} />
         <Steps />
         <Testimonials items={rubroTestimonials} />
         <FaqSection faqs={faqs} />
-        <Contact packs={packs} defaultRubro={r.name} waMessage={r.whatsappMessage} />
+        <Contact packs={packs} defaultRubro={r.name} waMessage={r.whatsappMessage} currency={currency} />
         <FinalCta message={r.whatsappMessage} />
       </main>
       <Footer />
-      <CouponPopup config={popup} />
+      <CouponPopup config={popup} currency={currency} />
+      <CartDrawer packs={packs} extras={extras} monthly={monthly} currency={currency} />
       <FloatingWhatsApp message={r.whatsappMessage} />
     </>
   );

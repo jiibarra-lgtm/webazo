@@ -3,7 +3,7 @@ import { hasSupabase } from '@/lib/env';
 import { createClient } from '@/lib/supabase/server';
 import { LEAD_STATUSES } from '@/lib/types';
 
-const COLS = ['created_at', 'name', 'phone', 'email', 'business', 'rubro', 'pack', 'message', 'status', 'price_usd', 'coupon_code', 'discount_usd', 'final_usd', 'value_usd', 'notes', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'landing_path'] as const;
+const COLS = ['created_at', 'name', 'phone', 'email', 'business', 'rubro', 'pack', 'message', 'status', 'price_usd', 'coupon_code', 'discount_usd', 'final_usd', 'monthly_usd', 'value_usd', 'notes', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'landing_path'] as const;
 
 const cell = (v: unknown) => {
   if (v === null || v === undefined) return '';

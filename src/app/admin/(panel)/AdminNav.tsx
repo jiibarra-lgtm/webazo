@@ -6,6 +6,7 @@ const LINKS = [
   { href: '/admin/leads', label: 'Leads' },
   { href: '/admin/packs', label: 'Packs y precios' },
   { href: '/admin/cupones', label: 'Cupones' },
+  { href: '/admin/rubros', label: 'Rubros y landings' },
   { href: '/admin/testimonios', label: 'Testimonios' },
   { href: '/admin/preguntas', label: 'Preguntas' },
 ];
