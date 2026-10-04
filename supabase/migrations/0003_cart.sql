@@ -32,3 +32,12 @@ insert into public.extras (slug, name, description, price_usd, sort_order, activ
 ('mail', 'Mail profesional', 'Casilla con tu dominio (vos@tunegocio.com.ar)', 15, 5, false),
 ('meta-ads', 'Configuración de Meta Ads', 'Píxel, públicos y tu primera campaña', 50, 6, false)
 on conflict (slug) do nothing;
+
+-- Permisos de la Data API (los proyectos nuevos de Supabase no los otorgan solos)
+grant select on public.packs, public.settings, public.testimonials, public.faqs, public.extras to anon;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant select, insert, update, delete on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to authenticated, service_role;
+grant execute on function public.is_admin() to anon, authenticated, service_role;
+alter default privileges in schema public grant select, insert, update, delete on tables to authenticated, service_role;
+alter default privileges in schema public grant usage, select on sequences to authenticated, service_role;

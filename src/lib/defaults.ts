@@ -43,7 +43,8 @@ export const DEFAULT_FAQS: Faq[] = [
 
 export const DEFAULT_POPUP: PopupConfig = {
   enabled: true,
-  delay_seconds: 12,
+  delay_seconds: 2,
+  frequency: 'session',
   coupon_code: 'BIENVENIDA10',
   eyebrow: 'Solo para nuevos clientes',
   title: '¿Querés más clientes este mes?',

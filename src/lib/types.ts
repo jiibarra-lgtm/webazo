@@ -85,9 +85,12 @@ export type Coupon = {
   active: boolean;
 };
 
+export type PopupFrequency = 'always' | 'session' | 'day' | 'week';
+
 export type PopupConfig = {
   enabled: boolean;
   delay_seconds: number;
+  frequency: PopupFrequency;
   coupon_code: string;
   eyebrow: string;
   title: string;

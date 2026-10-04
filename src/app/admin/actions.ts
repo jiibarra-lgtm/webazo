@@ -175,7 +175,8 @@ export async function savePopup(fd: FormData) {
     key: 'popup',
     value: {
       enabled: bool(fd, 'enabled'),
-      delay_seconds: num(fd, 'delay_seconds') ?? 12,
+      delay_seconds: num(fd, 'delay_seconds') ?? 2,
+      frequency: ['always', 'session', 'day', 'week'].includes(str(fd, 'frequency') ?? '') ? str(fd, 'frequency') : 'session',
       coupon_code: (str(fd, 'coupon_code') ?? '').toUpperCase(),
       eyebrow: str(fd, 'eyebrow') ?? '',
       title: str(fd, 'title') ?? '',

@@ -5,6 +5,7 @@ import { toWaPhone } from '@/lib/whatsapp';
 import type { Coupon, Pack, PopupConfig } from '@/lib/types';
 import { deleteCouponAction, saveCouponAction, savePopup, toggleCoupon, togglePopup } from '../../actions';
 import Toggle from '../Toggle';
+import PopupPreview from '../PopupPreview';
 
 type Claim = { id: string; created_at: string; coupon_code: string; name: string | null; business: string | null; rubro: string | null; phone: string; utm_campaign: string | null; converted: boolean };
 
@@ -103,23 +104,41 @@ export default async function CuponesPage() {
         ) : <p className="empty">Todavía no hay cupones.</p>}
       </div>
 
-      <div className="card">
-        <h2>Popup de bienvenida</h2>
-        <p className="muted" style={{ marginBottom: 14 }}>Aparece una vez por semana a cada visitante nuevo: a los segundos que elijas, cuando intenta irse (en compu) o al bajar el 60% de la página (en celu). Primero pregunta si quiere más clientes, después pide negocio, rubro, nombre y WhatsApp (mostrando una vista previa de su web) y entrega el código. Si lo cierra, queda una pestañita para reabrirlo. Si el cupón tiene límite de usos, muestra los cupos reales que quedan.</p>
+      <div className="card" id="popup">
+        <h2>Popup actual</h2>
+        <div className="preview-meta">
+          <Toggle action={togglePopup} on={popup.enabled} field="enabled" labelOn="Mostrándose en la web" labelOff="Apagado" />
+          <span className="muted">Entrega <strong>{popup.coupon_code}</strong> · aparece a los {popup.delay_seconds} s · {({ always: 'Cada vez que carga una página', session: 'Una vez por visita', day: 'Una vez por día', week: 'Una vez por semana' } as Record<string, string>)[popup.frequency] ?? 'Una vez por visita'}</span>
+          <a className="b b-dark" href="/?popup=1" target="_blank" rel="noopener">Ver en la web</a>
+        </div>
+        <PopupPreview config={popup} />
+
+        <h3 style={{ fontSize: 18, margin: '8px 0 12px' }}>Editar popup</h3>
         <form action={savePopup} className="form-grid">
+          <div className="f"><label htmlFor="pe">Texto chico de arriba</label><input id="pe" name="eyebrow" defaultValue={popup.eyebrow} /></div>
+          <div className="f"><label htmlFor="po">Oferta grande (lado naranja)</label><input id="po" name="offer" defaultValue={popup.offer} placeholder="10% OFF" /></div>
+          <div className="f full"><label htmlFor="pt">Pregunta principal</label><input id="pt" name="title" defaultValue={popup.title} /></div>
+          <div className="f full"><label htmlFor="px">Texto debajo de la pregunta</label><textarea id="px" name="text" defaultValue={popup.text} /></div>
+          <div className="f"><label htmlFor="pb">Botón del “Sí”</label><input id="pb" name="cta" defaultValue={popup.cta} /></div>
           <div className="f"><label htmlFor="pc">Cupón que entrega</label>
             <select id="pc" name="coupon_code" defaultValue={popup.coupon_code}>
               {list.map((c) => <option key={c.id} value={c.code}>{c.code}{!c.active ? ' (inactivo)' : ''}</option>)}
             </select>
           </div>
           <div className="f"><label htmlFor="pd">Aparece a los (segundos)</label><input id="pd" name="delay_seconds" inputMode="numeric" defaultValue={popup.delay_seconds} /></div>
-          <div className="f"><label htmlFor="pe">Texto chico de arriba</label><input id="pe" name="eyebrow" defaultValue={popup.eyebrow} /></div>
-          <div className="f"><label htmlFor="po">Oferta grande</label><input id="po" name="offer" defaultValue={popup.offer} placeholder="10% OFF" /></div>
-          <div className="f full"><label htmlFor="pt">Pregunta inicial</label><input id="pt" name="title" defaultValue={popup.title} /></div>
-          <div className="f full"><label htmlFor="px">Texto</label><textarea id="px" name="text" defaultValue={popup.text} /></div>
-          <div className="f"><label htmlFor="pb">Botón del “Sí”</label><input id="pb" name="cta" defaultValue={popup.cta} /></div>
-          <label className="check" style={{ alignSelf: 'end' }}><input type="checkbox" name="enabled" defaultChecked={popup.enabled} /> Popup activo</label>
-          <div className="actions-row full"><button className="b b-orange" type="submit">Guardar popup</button></div>
+          <div className="f"><label htmlFor="pf">¿Cada cuánto se muestra?</label>
+            <select id="pf" name="frequency" defaultValue={popup.frequency}>
+              <option value="always">Cada vez que carga una página</option>
+              <option value="session">Una vez por visita (recomendado)</option>
+              <option value="day">Una vez por día</option>
+              <option value="week">Una vez por semana</option>
+            </select>
+          </div>
+          <label className="check full"><input type="checkbox" name="enabled" defaultChecked={popup.enabled} /> Popup activo</label>
+          <div className="actions-row full">
+            <button className="b b-orange" type="submit">Guardar cambios</button>
+            <span className="muted">Los cambios se ven en la web en unos segundos. Para probarlo, usá “Ver en la web”: lo abre siempre, aunque ya lo hayas visto.</span>
+          </div>
         </form>
       </div>
 

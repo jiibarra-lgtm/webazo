@@ -95,3 +95,7 @@
 .inline-form{display:flex;gap:6px;align-items:center}
 .inline-form select{border:1px solid #D4D4D4;border-radius:8px;padding:5px 8px;font-size:13px;background:#fff;min-height:34px}
 .inline-form button{min-height:34px;padding:0 10px;font-size:12px}
+.popup-preview-frame{background:repeating-linear-gradient(45deg,#EFEFEF,#EFEFEF 10px,#F7F7F7 10px,#F7F7F7 20px);border-radius:16px;padding:24px;margin-bottom:18px;overflow-x:auto}
+.popup-preview-frame .pop{width:100%;max-width:820px;margin:0 auto;position:relative}
+.popup-preview-frame .pop-art-offer{font-size:72px}
+.preview-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}

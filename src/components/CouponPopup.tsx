@@ -34,27 +34,44 @@ export default function CouponPopup({ config, currency }: { config: PopupConfig;
     shown.current = true;
     setOpen(true);
     setTeaser(false);
-    setCookie(SEEN_COOKIE, '1', 7);
+    if (config.frequency === 'session') { try { sessionStorage.setItem(SEEN_COOKIE, '1'); } catch { /* privado */ } }
+    else if (config.frequency === 'day') setCookie(SEEN_COOKIE, '1', 1);
+    else if (config.frequency === 'week') setCookie(SEEN_COOKIE, '1', 7);
     window.fbq?.('trackCustom', 'PopupVisto');
-  }, []);
+  }, [config.frequency]);
 
   const close = useCallback(() => {
     setOpen(false);
     // Si no reclamó, queda la pestañita para volver a abrirlo
     if (!readCoupon()) {
       setTeaser(true);
-      setCookie(CLOSED_COOKIE, '1', 7);
+      setCookie(CLOSED_COOKIE, '1', 1);
     }
   }, []);
 
-  // Disparadores: tiempo, intención de salida (compu) y scroll (celu)
+  // ¿Ya se mostró según la frecuencia elegida en el panel?
+  const alreadySeen = useCallback(() => {
+    switch (config.frequency) {
+      case 'always': return false;
+      case 'session': try { return sessionStorage.getItem(SEEN_COOKIE) === '1'; } catch { return false; }
+      default: return getCookie(SEEN_COOKIE) === '1';
+    }
+  }, [config.frequency]);
+
+  // Disparadores: al entrar (con la demora configurada), intención de salida y scroll
   useEffect(() => {
-    if (disabled || readCoupon()) return;
-    if (getCookie(SEEN_COOKIE)) {
+    if (disabled) return;
+    const force = new URLSearchParams(window.location.search).get('popup') === '1';
+    if (force) {
+      const t = window.setTimeout(show, 400);
+      return () => window.clearTimeout(t);
+    }
+    if (readCoupon()) return;
+    if (alreadySeen()) {
       if (getCookie(CLOSED_COOKIE)) setTeaser(true);
       return;
     }
-    const timer = window.setTimeout(show, Math.max(3, config.delay_seconds) * 1000);
+    const timer = window.setTimeout(show, Math.max(0, config.delay_seconds) * 1000);
     const onLeave = (e: MouseEvent) => { if (e.clientY <= 0 && !e.relatedTarget) show(); };
     const onScroll = () => {
       const h = document.documentElement;
@@ -67,7 +84,7 @@ export default function CouponPopup({ config, currency }: { config: PopupConfig;
       document.removeEventListener('mouseout', onLeave);
       window.removeEventListener('scroll', onScroll);
     };
-  }, [disabled, config.delay_seconds, show]);
+  }, [disabled, config.delay_seconds, show, alreadySeen]);
 
   // Cupos reales restantes (solo si el cupón tiene límite)
   useEffect(() => {
