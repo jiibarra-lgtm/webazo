@@ -615,3 +615,15 @@ a.ex:hover{background:var(--ink-2)}
   .cart-totals .total{font-size:23px}
   .cart-form input,.cart-form select{min-height:46px;font-size:16px}
 }
+
+/* ── v11: más vendido, compradores y regalo del cupón ── */
+.packs-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.pack.is-best{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,90,31,.15)}
+.best-seller{align-self:flex-start;background:var(--orange);color:var(--ink);font-weight:800;font-size:14px;padding:6px 12px;border-radius:999px;margin-top:-10px}
+.sold-count{font-size:14px;font-weight:700;color:var(--green);margin-top:-12px}
+.pack.featured .sold-count{color:#7BE3A4}
+.pop-bonus{margin:0;font-weight:700;font-size:15px;color:var(--orange-dark);background:#FFF1EA;border-radius:12px;padding:8px 12px}
+.pop-art-bonus{display:block;margin-top:8px;font-weight:800;font-size:15px;line-height:1.25;max-width:200px;text-align:center}
+.cp-bonus{color:var(--green)!important;font-weight:700}
+.pack.featured .cp-bonus{color:#7BE3A4!important}
+@media (max-width:720px){.best-seller{font-size:12.5px}.sold-count{font-size:13px}.pop-bonus{font-size:13.5px;padding:7px 10px}.pop-art-bonus{font-size:13px}}

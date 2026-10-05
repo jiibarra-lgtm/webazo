@@ -10,6 +10,8 @@ export type Pack = {
   featured: boolean;
   cta_label: string | null;
   badge?: string | null;
+  best_seller?: boolean;
+  sold_count?: number | null;
   sort_order: number;
   active: boolean;
 };
@@ -83,6 +85,7 @@ export type Coupon = {
   expires_at: string | null;
   max_uses: number | null;
   uses: number;
+  free_months?: number;
   active: boolean;
 };
 
@@ -96,6 +99,7 @@ export type PopupConfig = {
   eyebrow: string;
   title: string;
   offer: string;
+  bonus?: string;
   text: string;
   cta: string;
 };
@@ -107,6 +111,7 @@ export type ActiveCoupon = {
   value: number;
   packs: string[];
   expires_at: string | null;
+  free_months?: number;
 };
 
 export type CurrencyMode = 'USD' | 'ARS' | 'BOTH';

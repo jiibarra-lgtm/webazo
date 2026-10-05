@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { COUPON_EVENT, couponApplies, couponLabel, discounted, readCoupon } from '@/lib/coupon-client';
+import { COUPON_EVENT, couponApplies, couponBonus, couponLabel, discounted, readCoupon } from '@/lib/coupon-client';
 import type { ActiveCoupon, CurrencyConfig } from '@/lib/types';
 import { money } from '@/lib/money';
 
@@ -28,6 +28,7 @@ export default function PackCouponPrice({ slug, price, currency }: { slug: strin
       <span className="cp-label">Tu precio con {c.code}</span>
       <b>{money(final, currency)}</b>
       <small>Ahorrás {money(discount, currency)} · {couponLabel(c, currency)}</small>
+      {couponBonus(c) && <small className="cp-bonus">🎁 {couponBonus(c).replace(/^\+\s*/, '')}</small>}
     </div>
   );
 }

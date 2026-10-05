@@ -49,6 +49,7 @@ export const DEFAULT_POPUP: PopupConfig = {
   eyebrow: 'Solo para nuevos clientes',
   title: '¿Querés más clientes este mes?',
   offer: '10% OFF',
+  bonus: '+ 1 mes de mantenimiento gratis',
   text: 'Llevate un 10% de descuento en tu primer webazo y mirá cómo quedaría la web de tu negocio.',
   cta: 'Sí, quiero mi descuento',
 };

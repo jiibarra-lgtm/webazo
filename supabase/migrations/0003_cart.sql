@@ -48,3 +48,9 @@ alter table public.coupon_claims alter column phone drop not null;
 -- v10: etiqueta personalizable por pack
 alter table public.packs add column if not exists badge text;
 update public.packs set badge = 'El más completo' where featured and badge is null;
+
+-- v11: más vendido, compradores, meses gratis en cupones y packs premium
+alter table public.packs add column if not exists best_seller boolean not null default false;
+alter table public.packs add column if not exists sold_count integer;
+alter table public.coupons add column if not exists free_months integer not null default 0;
+update public.coupons set free_months = 1 where code = 'BIENVENIDA10';

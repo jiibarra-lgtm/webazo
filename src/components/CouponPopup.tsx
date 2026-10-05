@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { getAttribution, getCookie, newEventId, setCookie, trackContact } from '@/lib/tracking';
-import { couponApplies, couponLabel, discounted, readCoupon, saveCoupon } from '@/lib/coupon-client';
+import { couponApplies, couponBonus, couponLabel, discounted, readCoupon, saveCoupon } from '@/lib/coupon-client';
 import { openCart, setPack } from '@/lib/cart';
 import { money } from '@/lib/money';
 import { DEFAULT_CURRENCY } from '@/lib/defaults';
@@ -129,7 +129,8 @@ export default function CouponPopup({ config, currency = DEFAULT_CURRENCY, packs
 
   const offer = coupon ? couponLabel(coupon, currency) : config.offer;
   const featured = packs.find((p) => p.featured) ?? packs[packs.length - 1];
-  const waMsg = `Hola! Me llevé el cupón ${coupon?.code ?? config.coupon_code} (${offer}). Quiero mi webazo.`;
+  const bonusTxt = coupon ? couponBonus(coupon) : config.bonus ?? '';
+  const waMsg = `Hola! Me llevé el cupón ${coupon?.code ?? config.coupon_code} (${offer}${bonusTxt ? ` ${bonusTxt}` : ''}). Quiero mi webazo.`;
 
   return (
     <>
@@ -161,6 +162,7 @@ export default function CouponPopup({ config, currency = DEFAULT_CURRENCY, packs
                   <span className="pop-eyebrow">{config.eyebrow}</span>
                   <h2 id="pop-title">{config.title}</h2>
                   <p className="pop-text">{config.text}</p>
+                  {config.bonus && <p className="pop-bonus">🎁 {config.bonus.replace(/^\+\s*/, 'Además: ')}</p>}
                   {remaining !== null && remaining > 0 && (
                     <p className="pop-scarcity"><span className="dot" aria-hidden="true" />Quedan {remaining} {remaining === 1 ? 'cupón' : 'cupones'}</p>
                   )}
@@ -176,6 +178,7 @@ export default function CouponPopup({ config, currency = DEFAULT_CURRENCY, packs
                 <>
                   <span className="pop-eyebrow">¡Descuento desbloqueado!</span>
                   <h2 id="pop-title">Listo, tenés {couponLabel(coupon, currency)} en tu webazo</h2>
+                  {couponBonus(coupon) && <p className="pop-bonus">🎁 {couponBonus(coupon).replace(/^\+\s*/, 'Y además: ')}</p>}
                   <button type="button" className="pop-code small" onClick={copy} aria-label={`Copiar código ${coupon.code}`}>
                     <span>{coupon.code}</span><small>{copied ? '¡Copiado!' : 'Ya aplicado · tocá para copiar'}</small>
                   </button>
@@ -207,6 +210,8 @@ export default function CouponPopup({ config, currency = DEFAULT_CURRENCY, packs
                 {step === 'done' && <span className="pop-stamp">Aplicado</span>}
                 <span className="pop-art-offer">{offer}</span>
                 <span className="pop-art-sub">{step === 'done' ? 'ya está en tus precios' : 'en tu primer webazo'}</span>
+                {(coupon ? couponBonus(coupon) : config.bonus) && <span className="pop-art-bonus">{coupon ? couponBonus(coupon) : config.bonus}</span>}
+                <span hidden></span>
               </div>
             </div>
           </div>

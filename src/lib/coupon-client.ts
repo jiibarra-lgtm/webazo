@@ -33,6 +33,13 @@ export function couponLabel(c: ActiveCoupon, currency?: CurrencyConfig) {
   return `${currency ? money(c.value, currency) : `USD ${c.value}`} OFF`;
 }
 
+/** Texto del regalo extra del cupón (meses de mantenimiento gratis). */
+export function couponBonus(c: ActiveCoupon | null | undefined) {
+  const n = Number(c?.free_months ?? 0);
+  if (!n) return '';
+  return n === 1 ? '+ 1 mes de mantenimiento gratis' : `+ ${n} meses de mantenimiento gratis`;
+}
+
 export function couponApplies(c: ActiveCoupon, packSlug: string) {
   return !c.packs.length || c.packs.includes(packSlug);
 }

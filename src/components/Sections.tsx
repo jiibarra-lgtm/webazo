@@ -38,7 +38,7 @@ export function Packs({ packs, monthly, recommended, rubroName, currency = DEFAU
         <div className="packs-grid">
           {packs.map((p) => {
             const isRec = recommended === p.slug;
-            const cls = ['pack', p.featured ? 'featured' : '', isRec && !p.featured ? 'recommended' : ''].join(' ').trim();
+            const cls = ['pack', p.featured ? 'featured' : '', isRec && !p.featured ? 'recommended' : '', p.best_seller ? 'is-best' : ''].join(' ').trim();
             const msg = rubroName ? `Hola! Me interesa el pack ${p.name} (${rubroName})` : `Hola! Me interesa el pack ${p.name}`;
             return (
               <article key={p.id} className={cls}>
@@ -46,6 +46,8 @@ export function Packs({ packs, monthly, recommended, rubroName, currency = DEFAU
                   <h3>{p.name}</h3>
                   {isRec ? <span className="badge">Recomendado para vos</span> : p.badge ? <span className="badge">{p.badge}</span> : p.featured ? <span className="badge">El más completo</span> : null}
                 </div>
+                {p.best_seller && <span className="best-seller">🔥 El más vendido</span>}
+                {p.sold_count ? <span className="sold-count">{p.sold_count} {p.sold_count === 1 ? 'negocio ya lo eligió' : 'negocios ya lo eligieron'}</span> : null}
                 {p.tagline && <p className="for">{p.tagline}</p>}
                 <div className="price">
                   <span className="from">desde</span>

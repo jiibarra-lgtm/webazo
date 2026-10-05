@@ -25,7 +25,7 @@ export async function checkCoupon(rawCode: string, packSlug?: string | null): Pr
   }
   return {
     ok: true,
-    coupon: { code: c.code, type: c.type, value: Number(c.value), packs: c.packs, expires_at: c.expires_at },
+    coupon: { code: c.code, type: c.type, value: Number(c.value), packs: c.packs, expires_at: c.expires_at, free_months: Number(c.free_months ?? 0) },
   };
 }
 

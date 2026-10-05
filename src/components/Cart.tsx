@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CART_EVENT, CART_OPEN_EVENT, cartCount, clearCart, openCart, readCart, setMonthly, setPack, toggleExtra } from '@/lib/cart';
-import { COUPON_EVENT, couponApplies, couponLabel, discounted, readCoupon, saveCoupon } from '@/lib/coupon-client';
+import { COUPON_EVENT, couponApplies, couponBonus, couponLabel, discounted, readCoupon, saveCoupon } from '@/lib/coupon-client';
 import { getAttribution, getCookie, newEventId } from '@/lib/tracking';
 import { money } from '@/lib/money';
 import { whatsappUrl } from '@/lib/whatsapp';
@@ -94,6 +94,7 @@ export function CartDrawer({ packs, extras, monthly, currency }: DrawerProps) {
   const calc = useMemo(() => (coupon && applies && subtotal > 0 ? discounted(subtotal, coupon) : null), [coupon, applies, subtotal]);
   const total = calc ? calc.final : subtotal;
   const monthlyUsd = cart.monthly ? monthly.price_usd : 0;
+  const freeMonths = coupon && applies && cart.monthly ? Number(coupon.free_months ?? 0) : 0;
 
   async function applyCode() {
     if (!code.trim()) return;
@@ -107,7 +108,7 @@ export function CartDrawer({ packs, extras, monthly, currency }: DrawerProps) {
       const data = await res.json();
       if (data.ok) {
         saveCoupon(data.coupon);
-        setCouponMsg({ ok: true, text: `Cupón aplicado: ${couponLabel(data.coupon, currency)}` });
+        setCouponMsg({ ok: true, text: `Cupón aplicado: ${couponLabel(data.coupon, currency)}${couponBonus(data.coupon) ? ` ${couponBonus(data.coupon)}` : ''}` });
       } else setCouponMsg({ ok: false, text: data.error || 'Código inválido.' });
     } catch { setCouponMsg({ ok: false, text: 'No pudimos validar el código.' }); }
     setChecking(false);
@@ -153,6 +154,7 @@ export function CartDrawer({ packs, extras, monthly, currency }: DrawerProps) {
         ...(t.discount ? [`Cupón ${t.coupon}: − ${money(t.discount, currency)}`] : []),
         `*Total: ${money(t.final, currency)}*`,
         ...(t.monthly ? [`+ Mantenimiento: ${money(t.monthly, currency)}/mes`] : []),
+        ...(freeMonths ? [`🎁 Bonus ${t.coupon ?? coupon?.code}: ${freeMonths === 1 ? 'primer mes' : `primeros ${freeMonths} meses`} de mantenimiento gratis`] : []),
         ``,
         `Nombre: ${name}`,
         ...(business ? [`Negocio: ${business}${rubro ? ` (${rubro})` : ''}`] : rubro ? [`Rubro: ${rubro}`] : []),
@@ -228,7 +230,8 @@ export function CartDrawer({ packs, extras, monthly, currency }: DrawerProps) {
             <div><span>Subtotal</span><span>{money(subtotal, currency)}</span></div>
             {calc && <div className="disc"><span>Cupón {coupon?.code} ({couponLabel(coupon!, currency)})</span><span>− {money(calc.discount, currency)}</span></div>}
             <div className="total"><span>Total</span><span>{money(total, currency)}</span></div>
-            {cart.monthly && <div className="per-month"><span>Después</span><span>{money(monthly.price_usd, currency)}/mes</span></div>}
+            {cart.monthly && freeMonths > 0 && <div className="disc"><span>🎁 Mantenimiento gratis</span><span>{freeMonths === 1 ? '1er mes' : `${freeMonths} meses`}</span></div>}
+            {cart.monthly && <div className="per-month"><span>{freeMonths ? 'Después' : 'Después'}</span><span>{money(monthly.price_usd, currency)}/mes</span></div>}
             {calc && <p className="save">Ahorrás {money(calc.discount, currency)} con tu cupón</p>}
           </div>
 

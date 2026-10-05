@@ -98,12 +98,14 @@ export async function POST(req: Request) {
   const price: number | null = packPrice != null || extrasTotal > 0 ? (packPrice ?? 0) + extrasTotal : null;
 
   let couponCode: string | null = null;
+  let freeMonths = 0;
   let discount: number | null = null;
   let final: number | null = price;
   if (d.coupon) {
     const check = await checkCoupon(d.coupon, d.pack);
     if (check.ok) {
       couponCode = check.coupon.code;
+      freeMonths = d.monthly ? Number(check.coupon.free_months ?? 0) : 0;
       if (price != null) {
         const r = applyDiscount(price, check.coupon);
         discount = r.discount;
@@ -172,7 +174,7 @@ export async function POST(req: Request) {
     notifyByEmail(d, a),
   ]);
 
-  return NextResponse.json({ ok: true, totals: { price, discount, final, monthly: monthlyPrice || null, coupon: couponCode } });
+  return NextResponse.json({ ok: true, totals: { price, discount, final, monthly: monthlyPrice || null, coupon: couponCode, free_months: freeMonths } });
 }
 
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

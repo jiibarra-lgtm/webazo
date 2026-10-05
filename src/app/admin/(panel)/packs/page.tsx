@@ -37,11 +37,13 @@ function PackForm({ p, rate }: { p?: Pack; rate: number }) {
       <div className="f"><label htmlFor={`price-${k}`}>Precio</label><PriceInput id={`price-${k}`} name="price_usd" defaultValue={p?.price_usd} rate={rate} required /></div>
       <div className="f"><label htmlFor={`before-${k}`}>Precio anterior (se muestra tachado)</label><PriceInput id={`before-${k}`} name="price_before_usd" defaultValue={p?.price_before_usd} rate={rate} placeholder="Opcional" /></div>
       <div className="f"><label htmlFor={`note-${k}`}>Nota del precio</label><input id={`note-${k}`} name="price_note" defaultValue={p?.price_note ?? ''} placeholder="Ej: Precio de lanzamiento" /></div>
+      <div className="f"><label htmlFor={`sold-${k}`}>Cantidad de clientes que lo compraron</label><input id={`sold-${k}`} name="sold_count" type="number" min={0} inputMode="numeric" defaultValue={p?.sold_count ?? ''} placeholder="Vacío = no se muestra" /><span className="muted small">Se ve en la web como "12 negocios ya lo eligieron". Cargá solo números reales.</span></div>
       <div className="f"><label htmlFor={`cta-${k}`}>Texto del botón</label><input id={`cta-${k}`} name="cta_label" defaultValue={p?.cta_label ?? ''} placeholder={p ? `Quiero el ${p.name}` : 'Quiero este pack'} /></div>
       <div className="f full"><label htmlFor={`features-${k}`}>Qué incluye (una línea por ítem)</label><textarea id={`features-${k}`} name="features" defaultValue={p?.features.join('\n')} rows={5} placeholder={'Dominio .com.ar\nBotón de WhatsApp\nOnline en 72 hs'} /></div>
       <input type="hidden" name="sort_order" value={p?.sort_order ?? 0} />
       <div className="actions-row full">
         <label className="check"><input type="checkbox" name="featured" defaultChecked={p?.featured} /> Destacado (tarjeta oscura)</label>
+        <label className="check"><input type="checkbox" name="best_seller" defaultChecked={p?.best_seller} /> 🔥 El más vendido</label>
         <label className="check"><input type="checkbox" name="active" defaultChecked={p ? p.active : true} /> Visible en la web</label>
       </div>
       <div className="actions-row full"><button className="b b-orange" type="submit">{p ? 'Guardar cambios' : 'Crear pack'}</button></div>
@@ -109,6 +111,7 @@ export default async function PacksPage({ searchParams }: Props) {
                     <div>
                       <h2>{p.name}</h2>
                       {(p.badge || p.featured) && <span className="pill presupuesto">{p.badge || 'Destacado'}</span>}
+                      {p.best_seller && <span className="pill ganado">🔥 Más vendido</span>}
                       {!p.active && <span className="pill perdido">Oculto</span>}
                     </div>
                     <MoveButtons action={movePack} id={p.id} first={i === 0} last={i === packs.length - 1} />
@@ -119,7 +122,7 @@ export default async function PacksPage({ searchParams }: Props) {
                     {p.price_before_usd && <s>USD {p.price_before_usd}</s>}
                     <span className="muted">≈ $ {toArs(p.price_usd, currency).toLocaleString('es-AR')}</span>
                   </div>
-                  <p className="muted small">En la web se ve: <b>{money(p.price_usd, currency)}</b> · {p.features.length} ítems incluidos</p>
+                  <p className="muted small">En la web se ve: <b>{money(p.price_usd, currency)}</b> · {p.features.length} ítems incluidos{p.sold_count ? ` · ${p.sold_count} compraron (cargado a mano)` : ''}</p>
                   <div className="pc-stats">
                     <div><b>{st.leads}</b><span>leads (30 d)</span></div>
                     <div><b>{st.won}</b><span>vendidos</span></div>

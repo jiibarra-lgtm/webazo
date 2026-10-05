@@ -26,6 +26,7 @@ function CouponForm({ c, packs }: { c?: Coupon; packs: Pick<Pack, 'slug' | 'name
       </div>
       <div className="f"><label htmlFor={`value-${k}`}>Valor</label><input id={`value-${k}`} name="value" inputMode="decimal" defaultValue={c?.value} required /></div>
       <div className="f"><label htmlFor={`exp-${k}`}>Vence</label><input id={`exp-${k}`} name="expires_at" type="date" defaultValue={exp} /></div>
+      <div className="f"><label htmlFor={`fm-${k}`}>Meses de mantenimiento gratis</label><input id={`fm-${k}`} name="free_months" type="number" min={0} max={12} defaultValue={c?.free_months ?? 0} /></div>
       <div className="f"><label htmlFor={`max-${k}`}>Usos máximos</label><input id={`max-${k}`} name="max_uses" inputMode="numeric" defaultValue={c?.max_uses ?? ''} placeholder="Sin límite" /></div>
       <fieldset className="f full" style={{ border: 'none', padding: 0, margin: 0 }}>
         <legend style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>Aplica a (ninguno marcado = todos los packs)</legend>
@@ -117,6 +118,7 @@ export default async function CuponesPage() {
         <form action={savePopup} className="form-grid">
           <div className="f"><label htmlFor="pe">Texto chico de arriba</label><input id="pe" name="eyebrow" defaultValue={popup.eyebrow} /></div>
           <div className="f"><label htmlFor="po">Oferta grande (lado naranja)</label><input id="po" name="offer" defaultValue={popup.offer} placeholder="10% OFF" /></div>
+          <div className="f"><label htmlFor="pb">Regalo extra (opcional)</label><input id="pb" name="bonus" defaultValue={popup.bonus ?? ''} placeholder="+ 1 mes de mantenimiento gratis" /></div>
           <div className="f full"><label htmlFor="pt">Pregunta principal</label><input id="pt" name="title" defaultValue={popup.title} /></div>
           <div className="f full"><label htmlFor="px">Texto debajo de la pregunta</label><textarea id="px" name="text" defaultValue={popup.text} /></div>
           <div className="f"><label htmlFor="pb">Botón del “Sí”</label><input id="pb" name="cta" defaultValue={popup.cta} /></div>
@@ -171,7 +173,7 @@ export default async function CuponesPage() {
 
       {list.map((c) => (
         <div className="card" key={c.id}>
-          <h2>{c.code} <span className="muted" style={{ fontSize: 14, fontWeight: 500 }}>{c.type === 'percent' ? `${c.value}%` : `USD ${c.value}`} · {c.uses} usos{c.max_uses ? ` de ${c.max_uses}` : ''}</span> {!c.active && <span className="pill perdido">Inactivo</span>}</h2>
+          <h2>{c.code} <span className="muted" style={{ fontSize: 14, fontWeight: 500 }}>{c.type === 'percent' ? `${c.value}%` : `USD ${c.value}`}{c.free_months ? ` + ${c.free_months} ${c.free_months === 1 ? 'mes' : 'meses'} gratis` : ''} · {c.uses} usos{c.max_uses ? ` de ${c.max_uses}` : ''}</span> {!c.active && <span className="pill perdido">Inactivo</span>}</h2>
           <CouponForm c={{ ...c, value: Number(c.value) }} packs={pk} />
           <form action={deleteCouponAction} style={{ marginTop: 10 }}><input type="hidden" name="id" value={c.id} /><button className="b b-danger" type="submit">Eliminar cupón</button></form>
         </div>

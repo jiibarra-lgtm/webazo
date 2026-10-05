@@ -63,6 +63,8 @@ function packFromForm(fd: FormData) {
     cta_label: str(fd, 'cta_label'),
     sort_order: num(fd, 'sort_order') ?? 0,
     featured: bool(fd, 'featured'),
+    best_seller: bool(fd, 'best_seller'),
+    sold_count: num(fd, 'sold_count'),
     active: bool(fd, 'active'),
   };
 }
@@ -210,6 +212,7 @@ export async function saveCouponAction(fd: FormData) {
     packs: fd.getAll('packs').map(String).filter(Boolean),
     expires_at: expires ? new Date(`${expires}T23:59:59-03:00`).toISOString() : null,
     max_uses: num(fd, 'max_uses'),
+    free_months: num(fd, 'free_months') ?? 0,
     active: bool(fd, 'active'),
   };
   if (!row.code || row.value <= 0) return;
@@ -237,6 +240,7 @@ export async function savePopup(fd: FormData) {
       eyebrow: str(fd, 'eyebrow') ?? '',
       title: str(fd, 'title') ?? '',
       offer: str(fd, 'offer') ?? '',
+      bonus: str(fd, 'bonus') ?? '',
       text: str(fd, 'text') ?? '',
       cta: str(fd, 'cta') ?? 'Quiero mi descuento',
     },
