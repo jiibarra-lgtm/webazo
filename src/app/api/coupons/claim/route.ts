@@ -13,7 +13,7 @@ const schema = z.object({
   name: z.string().trim().max(80).optional(),
   business: z.string().trim().max(80).optional(),
   rubro: z.string().trim().max(80).optional(),
-  phone: z.string().trim().refine((v) => { const n = v.replace(/\D/g, '').length; return n >= 8 && n <= 15; }, 'Revisá el número'),
+  phone: z.string().trim().optional().refine((v) => { if (!v) return true; const n = v.replace(/\D/g, '').length; return n >= 8 && n <= 15; }, 'Revisá el número'),
   email: z.string().trim().max(120).optional().refine((v) => !v || z.string().email().safeParse(v).success, 'Mail inválido'),
   website: z.string().optional(),
   eventId: z.string().max(80).optional(),
@@ -23,7 +23,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const ip = getIp(req);
-  if (!rateLimit(`claim:${ip ?? 'anon'}`, 5, 10 * 60 * 1000)) {
+  if (!rateLimit(`claim:${ip ?? 'anon'}`, 15, 10 * 60 * 1000)) {
     return NextResponse.json({ error: 'Demasiados intentos. Probá en unos minutos.' }, { status: 429 });
   }
   let json: unknown;
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       name: d.name || null,
       business: d.business || null,
       rubro: d.rubro || null,
-      phone: d.phone,
+      phone: d.phone || null,
       email: d.email || null,
       utm_source: a.utm_source ?? null,
       utm_campaign: a.utm_campaign ?? null,
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     fbc: readCookie(req, '_fbc'),
     fbp: readCookie(req, '_fbp'),
     email: d.email || null,
-    phone: d.phone,
+    phone: d.phone || null,
     firstName: d.name || null,
     customData: { content_name: `cupon_${check.coupon.code}` },
   });

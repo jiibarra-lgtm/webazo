@@ -1,28 +1,33 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { env } from '@/lib/env';
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE } from '@/lib/seo';
 import Analytics from '@/components/Analytics';
 import AttributionCapture from '@/components/AttributionCapture';
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.siteUrl),
-  title: {
-    default: 'Webazo | Páginas web para negocios en CABA y GBA',
-    template: '%s',
-  },
-  description:
-    'Páginas web y sistemas para negocios: turnos online, catálogos, pedidos y cotizadores. Online en 72 hs, con dominio propio. CABA y GBA.',
+  title: { default: DEFAULT_TITLE, template: '%s' },
+  description: DEFAULT_DESCRIPTION,
   applicationName: 'Webazo',
+  authors: [{ name: 'Webazo', url: env.siteUrl }],
+  creator: 'Webazo',
+  publisher: 'Webazo',
+  category: 'business',
   alternates: { canonical: '/' },
+  formatDetection: { telephone: false },
   openGraph: {
     type: 'website',
     locale: 'es_AR',
     siteName: 'Webazo',
-    title: 'Webazo | No hagas una web. Hacé un webazo.',
-    description: 'Webs y sistemas para negocios. Online en 72 hs, con dominio propio.',
+    url: '/',
+    title: 'Páginas web para negocios en CABA y GBA | Webazo',
+    description: 'No hagas una web. Hacé un webazo. Turnos online, catálogos y pedidos por WhatsApp. Online en 72 hs.',
   },
-  icons: { icon: '/favicon.svg' },
-  robots: { index: true, follow: true },
+  twitter: { card: 'summary_large_image', title: 'Páginas web para negocios | Webazo', description: DEFAULT_DESCRIPTION },
+  icons: { icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }] },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
+  verification: process.env.NEXT_PUBLIC_GSC_VERIFICATION ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } : undefined,
 };
 
 export const viewport: Viewport = { themeColor: '#FF5A1F', width: 'device-width', initialScale: 1 };

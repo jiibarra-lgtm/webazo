@@ -7,7 +7,7 @@ import { deleteCouponAction, saveCouponAction, savePopup, toggleCoupon, togglePo
 import Toggle from '../Toggle';
 import PopupPreview from '../PopupPreview';
 
-type Claim = { id: string; created_at: string; coupon_code: string; name: string | null; business: string | null; rubro: string | null; phone: string; utm_campaign: string | null; converted: boolean };
+type Claim = { id: string; created_at: string; coupon_code: string; name: string | null; business: string | null; rubro: string | null; phone: string | null; utm_campaign: string | null; converted: boolean };
 
 function CouponForm({ c, packs }: { c?: Coupon; packs: Pick<Pack, 'slug' | 'name'>[] }) {
   const k = c?.id ?? 'new';
@@ -154,11 +154,11 @@ export default async function CuponesPage() {
                     <td className="muted">{dateTime(x.created_at)}</td>
                     <td>{x.name ?? '—'}</td>
                     <td>{x.business ?? '—'}{x.rubro && <div className="muted">{x.rubro}</div>}</td>
-                    <td>{x.phone}</td>
+                    <td>{x.phone ?? <span className="muted">Sin datos (1 clic)</span>}</td>
                     <td>{x.coupon_code}</td>
                     <td>{x.utm_campaign ?? 'Directo'}</td>
                     <td>{x.converted ? <span className="pill ganado">Pidió presupuesto</span> : <span className="pill nuevo">Sin pedido</span>}</td>
-                    <td><a className="b b-wa" target="_blank" rel="noopener" href={`https://wa.me/${toWaPhone(x.phone)}?text=${encodeURIComponent(`Hola${x.name ? ' ' + x.name.split(' ')[0] : ''}! Soy de Webazo, vi que te llevaste el cupón ${x.coupon_code}. ¿Te ayudo a elegir el pack ideal para ${x.business ?? 'tu negocio'}?`)}`}>Escribir</a></td>
+                    <td>{x.phone && <a className="b b-wa" target="_blank" rel="noopener" href={`https://wa.me/${toWaPhone(x.phone)}?text=${encodeURIComponent(`Hola${x.name ? ' ' + x.name.split(' ')[0] : ''}! Soy de Webazo, vi que te llevaste el cupón ${x.coupon_code}. ¿Te ayudo a elegir el pack ideal para ${x.business ?? 'tu negocio'}?`)}`}>Escribir</a>}</td>
                   </tr>
                 ))}
               </tbody>

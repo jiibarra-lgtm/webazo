@@ -135,3 +135,16 @@ Creá una cuenta en resend.com, verificá el dominio y cargá `RESEND_API_KEY`. 
 - **Precios, packs, FAQ, testimonios, banner:** desde `/admin`.
 - **Textos de las landings por rubro / agregar un rubro nuevo:** `src/lib/rubros.ts`. Se genera la URL sola y entra en el sitemap.
 - **Colores y tipografía:** variables al principio de `src/app/globals.css`.
+
+---
+
+## SEO
+
+- **Títulos y descripciones por página** con la palabra clave del rubro ("Página web para barberías en CABA y GBA").
+- **Datos estructurados (JSON-LD):** Organization + ProfessionalService con catálogo de packs, WebSite, BreadcrumbList, Service por rubro, FAQPage y Article en las guías. Sin reseñas inventadas (Google lo penaliza).
+- **Contenido único por rubro** (`src/lib/rubro-seo.ts`): intro y preguntas frecuentes propias de cada rubro.
+- **Guías** (`src/lib/guides.ts`, en `/guias`): contenido informativo con enlaces internos a rubros y packs. Sumar guías nuevas es agregar un objeto a ese archivo.
+- **Imágenes para compartir automáticas** por página, rubro y guía.
+- **Sitemap** con rubros y guías, **robots**, **manifest**, íconos y `/llms.txt` para buscadores con IA.
+- **Popup amigable con Google:** a quien llega desde un buscador en el celular no se le abre solo (solo ve la pestañita), para no caer en la penalización por intersticiales intrusivos.
+- **Search Console:** cargá el código de verificación en `NEXT_PUBLIC_GSC_VERIFICATION` (o verificá por DNS en Cloudflare) y enviá `/sitemap.xml`.

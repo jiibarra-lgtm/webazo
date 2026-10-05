@@ -41,3 +41,6 @@ grant usage, select on all sequences in schema public to authenticated, service_
 grant execute on function public.is_admin() to anon, authenticated, service_role;
 alter default privileges in schema public grant select, insert, update, delete on tables to authenticated, service_role;
 alter default privileges in schema public grant usage, select on sequences to authenticated, service_role;
+
+-- v8: el popup aplica el cupón con un clic (sin pedir teléfono)
+alter table public.coupon_claims alter column phone drop not null;

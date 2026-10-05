@@ -391,3 +391,227 @@ a.ex:hover{background:var(--ink-2)}
 .cart-form .hp{position:absolute;left:-9999px}
 @keyframes slidein{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
 @media (max-width:560px){.cart{width:100%}}
+
+/* ── SEO: migas, intro, guías, footer ──────────────── */
+.hero h1 .kicker{display:block;font-family:var(--body);font-weight:700;font-size:clamp(16px,1.6vw,20px);letter-spacing:0;line-height:1.3;color:var(--orange);margin-bottom:18px}
+.crumbs ol{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-wrap:wrap;gap:6px;font-size:15px}
+.crumbs li{display:flex;align-items:center;gap:6px;color:inherit;opacity:.8}
+.crumbs li + li::before{content:"/";opacity:.6}
+.crumbs a{text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.rubro-intro .wrap{max-width:860px}
+.rubro-intro h2{font-size:clamp(32px,4.4vw,52px);margin-bottom:22px}
+.rubro-intro p{font-size:20px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.guide-card{border:2px solid var(--line);border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:12px;text-decoration:none;transition:border-color .15s ease}
+.guide-card:hover{border-color:var(--ink)}
+.guide-card h3{font-size:24px;letter-spacing:-.02em;line-height:1.15}
+.guide-card p{color:var(--muted);font-size:16px}
+.guide-card .more{margin-top:auto;font-weight:700;color:var(--orange-dark)}
+.guide-meta{font-size:14px;color:var(--muted);font-weight:500}
+.guide h1{margin-bottom:6px}
+.guide ul{padding-left:22px;margin:0 0 18px}
+.guide li{margin-bottom:8px;line-height:1.55}
+.guide p{line-height:1.65}
+.guide .btn{color:var(--ink);margin-top:10px}
+.guide-related{margin-top:48px;padding:28px;border-radius:24px;background:var(--mist)}
+.guide-related h2{margin-top:0}
+.foot-links{display:flex;flex-direction:column;gap:12px;max-width:280px}
+.foot-links strong{color:#fff;font-size:15px}
+.foot-links ul{gap:8px;font-size:14px}
+
+/* ── Popup v8: un clic + festejo ───────────────────── */
+.pop-cta{min-height:60px;font-size:19px}
+.pop.is-done{overflow:hidden}
+.pop-code.small{padding:12px;margin:2px 0}
+.pop-code.small span{font-size:30px}
+.pop-prices{display:flex;flex-direction:column;gap:8px;width:100%}
+.pop-price{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;width:100%;border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;cursor:pointer;text-align:left;transition:border-color .15s ease,transform .15s ease;animation:priceIn .4s ease both}
+.pop-price:nth-child(2){animation-delay:.08s}.pop-price:nth-child(3){animation-delay:.16s}.pop-price:nth-child(4){animation-delay:.24s}
+.pop-price:hover{border-color:var(--ink);transform:translateY(-1px)}
+.pop-price.feat{border-color:var(--orange);background:#FFF5EF}
+.pp-name{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pp-name em{font-style:normal;font-size:11px;background:var(--orange);color:var(--ink);padding:2px 8px;border-radius:999px}
+.pp-amounts{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+.pp-amounts s{font-size:13px;color:var(--muted)}
+.pp-amounts b{font-family:var(--display);font-size:22px;letter-spacing:-.02em;color:var(--green)}
+.pp-pick{background:var(--ink);color:#fff;font-weight:700;font-size:13px;padding:8px 12px;border-radius:999px}
+.pop-stamp{position:relative;display:inline-block;align-self:center;border:4px solid var(--ink);color:var(--ink);font-family:var(--display);font-weight:800;font-size:22px;padding:4px 14px;border-radius:10px;transform:rotate(-8deg);margin-bottom:12px;animation:stamp .45s cubic-bezier(.2,1.6,.4,1) both}
+.pop.is-done .pop-art-offer{animation:pulseBig 1.2s ease .2s 2}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;opacity:0;animation:fall 1.6s ease-out forwards}
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(520px) rotate(540deg)}}
+@keyframes stamp{0%{opacity:0;transform:rotate(-8deg) scale(2.2)}100%{opacity:1;transform:rotate(-8deg) scale(1)}}
+@keyframes pulseBig{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes priceIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.confetti{display:none}.pop-stamp,.pop-price,.pop.is-done .pop-art-offer{animation:none}}
+
+/* Precio con cupón en los packs: pasa a ser el número principal */
+.coupon-price{animation:priceIn .35s ease both;border:2px solid var(--orange)}
+.coupon-price b{font-size:34px}
+.price.has-coupon .row .amount{text-decoration:line-through;text-decoration-thickness:4px;text-decoration-color:var(--orange);opacity:.45;font-size:34px}
+.price.has-coupon .row s{display:none}
+.price.has-coupon .note{display:none}
+.coupon-price{gap:4px;padding:14px 16px}
+.coupon-price .cp-label{font-size:13px;font-weight:700;color:var(--orange-dark)}
+.pack.featured .coupon-price .cp-label{color:var(--orange)}
+.coupon-price b{font-size:44px;line-height:1;color:var(--ink)}
+.pack.featured .coupon-price b{color:#fff}
+
+/* ═══════════════════════════════════════════════════════════
+   v9 · Ajuste fino para celular (solo pantallas chicas)
+   La versión de escritorio no se toca.
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width:720px){
+  body{font-size:16px;line-height:1.5}
+  .wrap{padding:0 18px}
+  .btn{min-height:48px;padding:0 20px;font-size:15.5px}
+  .btn svg{width:19px;height:19px}
+
+  /* Header y barras */
+  .banner{font-size:12.5px;padding:7px 12px}
+  .coupon-bar{font-size:12.5px;gap:8px;padding:8px 12px}
+  .header .wrap{height:60px}
+  .logo{font-size:25px}
+  .nav{gap:10px}
+  .nav .btn{min-height:38px;padding:0 14px;font-size:13.5px}
+  .cart-btn{width:38px;height:38px}
+  .cart-btn svg{width:19px;height:19px}
+
+  /* Hero */
+  .hero{padding:30px 0 44px}
+  .hero .wrap{gap:30px}
+  .hero h1{font-size:44px;line-height:.98}
+  .hero.rubro h1{font-size:38px}
+  .hero h1 .kicker{font-size:12.5px;margin-bottom:12px}
+  .hero .lead{margin-top:16px;font-size:16px}
+  .hero .actions{margin-top:22px;flex-direction:column;gap:10px}
+  .hero .actions .btn{width:100%}
+  .facts{margin-top:20px;gap:6px 16px;font-size:13.5px}
+  .crumbs ol{font-size:12.5px;margin-bottom:14px}
+
+  /* Celular de la demo */
+  .phone{width:min(280px,86%);border-radius:38px;padding:9px}
+  .screen{border-radius:30px;padding:20px 14px 16px;gap:10px;min-height:470px}
+  .screen .biz{font-size:20px}
+  .opt-list button{min-height:42px;font-size:13.5px;padding:0 12px}
+  .slots button{min-height:38px;font-size:13.5px}
+  .demo-cta{min-height:46px;font-size:14.5px}
+  .demo-caption{font-size:13px}
+
+  /* Secciones */
+  .section{padding:52px 0}
+  .section-head{margin-bottom:26px}
+  .section-head h2{font-size:31px}
+  .section-head p{margin-top:10px;font-size:15.5px}
+  .pains{gap:20px}
+  .pains li{padding-top:14px;border-top-width:3px}
+  .pains h3{font-size:21px}
+  .pains p{margin-top:6px;font-size:15px}
+  .rubro-intro h2{font-size:26px;margin-bottom:14px}
+  .rubro-intro p{font-size:15.5px}
+
+  /* Packs */
+  .packs-grid{gap:14px}
+  .pack{padding:24px 20px;gap:16px;border-radius:22px}
+  .pack.featured{border-radius:26px}
+  .pack-name h3{font-size:28px}
+  .pack .for{font-size:15px}
+  .price .amount{font-size:40px}
+  .price .amount small{font-size:17px}
+  .price s{font-size:16px}
+  .price.has-coupon .row .amount{font-size:26px}
+  .coupon-price b{font-size:34px}
+  .includes{font-size:14.5px;gap:8px}
+  .includes li svg{width:18px;height:18px}
+  .monthly{padding:20px;border-radius:20px;margin-top:14px}
+  .monthly h3{font-size:21px}
+  .monthly p{font-size:14.5px}
+  .monthly .amount{font-size:26px}
+  .small-note{font-size:12.5px}
+
+  /* Rubros y features */
+  .ex-grid{gap:12px}
+  .ex{padding:22px 20px;border-radius:20px;gap:10px}
+  .ex h3{font-size:22px}
+  .ex p,.ex ul{font-size:14.5px}
+  .chips-title{font-size:19px;margin-top:30px}
+  .rubro-chips{gap:8px}
+  .rubro-chips a{min-height:38px;padding:0 14px;font-size:13.5px}
+  .feature-list li{padding:16px;font-size:15.5px;border-radius:16px}
+
+  /* Pasos, testimonios, preguntas */
+  .steps{gap:22px}
+  .steps li::before{font-size:52px}
+  .steps h3{margin-top:8px;font-size:22px}
+  .steps p{font-size:15px}
+  .quote{padding:22px;border-radius:20px}
+  .quote blockquote{font-size:18px}
+  .faq-list details{padding:0 18px;border-radius:16px}
+  .faq-list summary{min-height:58px;font-size:16.5px}
+  .faq-list summary::after{font-size:24px}
+  .faq-list details p{font-size:15px;padding-bottom:18px}
+
+  /* Guías */
+  .guide-card{padding:20px;border-radius:18px}
+  .guide-card h3{font-size:19px}
+  .guide-card p{font-size:14.5px}
+
+  /* Contacto */
+  .contact .wrap{gap:24px}
+  .contact .side h2{font-size:31px}
+  .contact .side p{font-size:15.5px}
+  .form{padding:18px;gap:12px;border-radius:20px}
+  .field label{font-size:14px}
+  .field input,.field select,.field textarea{min-height:48px;font-size:16px;padding:10px 12px;border-radius:12px}
+  .coupon-field button{min-height:48px;padding:0 14px}
+  .summary{padding:14px 16px;font-size:14.5px}
+  .summary .total{font-size:20px}
+
+  /* CTA final y footer */
+  .final h2{font-size:38px}
+  .final p{font-size:16px;margin-top:14px}
+  .final .btn{margin-top:22px;width:100%}
+  .footer{padding:40px 0 96px;font-size:14px}
+  .footer .logo{font-size:28px}
+  .wa-float{width:54px;height:54px;right:14px;bottom:14px}
+  .wa-float svg{width:28px;height:28px}
+  .pop-teaser{left:14px;bottom:14px;min-height:46px;font-size:14px;padding:0 16px}
+
+  /* Páginas simples */
+  .simple{padding:44px 0}
+  .simple h1{font-size:36px}
+  .simple .lead{font-size:16.5px}
+  .prose h2{font-size:23px;margin:30px 0 10px}
+
+  /* Popup del cupón */
+  .pop-body{padding:22px 18px 18px;gap:9px}
+  .pop-body .logo{font-size:23px}
+  .pop-body h2{font-size:25px}
+  .pop-text{font-size:14.5px}
+  .pop-cta{min-height:52px;font-size:16px}
+  .pop-art{padding:18px}
+  .pop-art-offer{font-size:46px}
+  .pop-art-sub{font-size:15px;margin-top:4px}
+  .pop-stamp{font-size:16px;margin-bottom:8px}
+  .pop-code.small span{font-size:24px}
+  .pop-price{padding:10px 12px;gap:8px}
+  .pp-name{font-size:14.5px}
+  .pp-amounts b{font-size:19px}
+  .pp-pick{font-size:12px;padding:7px 10px}
+  .pop-close{width:38px;height:38px;top:10px;right:10px}
+
+  /* Carrito */
+  .cart-head{padding:14px 16px}
+  .cart-head h2{font-size:23px}
+  .cart-close{width:40px;height:40px}
+  .cart-body{padding:16px 16px 22px;gap:16px}
+  .cart-pack,.cart-extra{padding:10px 12px;gap:10px;border-radius:12px}
+  .cp-name{font-size:14.5px}
+  .cp-price,.ce-price{font-size:13.5px}
+  .ce-text strong{font-size:14.5px}
+  .ce-text small{font-size:12.5px}
+  .cart-totals{padding:14px 16px;border-radius:14px}
+  .cart-totals .total{font-size:23px}
+  .cart-form input,.cart-form select{min-height:46px;font-size:16px}
+}

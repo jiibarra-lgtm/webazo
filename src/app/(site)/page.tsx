@@ -1,6 +1,6 @@
 import { Banner, FloatingWhatsApp, Footer, Header } from '@/components/SiteChrome';
 import { DemoPhone } from '@/components/Demos';
-import { FaqSection, FinalCta, Packs, Pains, RubrosGrid, Steps, Testimonials, faqJsonLd } from '@/components/Sections';
+import { FaqSection, FinalCta, GuidesSection, Packs, Pains, RubrosGrid, Steps, Testimonials } from '@/components/Sections';
 import Contact from '@/components/Contact';
 import CouponBar from '@/components/CouponBar';
 import CouponPopup from '@/components/CouponPopup';
@@ -8,26 +8,13 @@ import { CartDrawer } from '@/components/Cart';
 import WhatsAppLink from '@/components/WhatsAppLink';
 import { WhatsAppIcon } from '@/components/Icons';
 import { getPageData } from '@/lib/data';
-import { currencyCode, toArs } from '@/lib/money';
-import { env, contact } from '@/lib/env';
+import { JsonLd, faqLd, organizationLd, websiteLd } from '@/lib/seo';
+import { GUIDES } from '@/lib/guides';
 
 export const revalidate = 300;
 
 export default async function Home() {
   const { packs, faqs, testimonials, monthly, banner, popup, currency, extras } = await getPageData();
-
-  const orgLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ProfessionalService',
-    name: 'Webazo',
-    description: 'Páginas web y sistemas para negocios: turnos online, catálogos, pedidos y cotizadores.',
-    url: env.siteUrl,
-    email: contact.email,
-    telephone: '+54 9 11 6025-4550',
-    areaServed: ['Ciudad Autónoma de Buenos Aires', 'Gran Buenos Aires'],
-    sameAs: [`https://www.instagram.com/${contact.instagram}`],
-    makesOffer: packs.map((p) => ({ '@type': 'Offer', name: `Pack ${p.name}`, price: currency.mode === 'ARS' ? toArs(p.price_usd, currency) : p.price_usd, priceCurrency: currencyCode(currency) })),
-  };
 
   return (
     <>
@@ -38,8 +25,8 @@ export default async function Home() {
         <section className="hero" aria-labelledby="hero-title">
           <div className="wrap">
             <div>
-              <h1 id="hero-title"><span>No hagas una web.</span><span className="second">Hacé un webazo.</span></h1>
-              <p className="lead">Páginas web y sistemas para negocios de CABA y GBA. Online en 72 hs, con dominio propio.</p>
+              <h1 id="hero-title"><span className="kicker">Diseño de páginas web para negocios en CABA y GBA</span><span>No hagas una web.</span><span className="second">Hacé un webazo.</span></h1>
+              <p className="lead">Páginas web con turnos online, catálogos y pedidos por WhatsApp. Online en 72 hs, con dominio propio y listas para aparecer en Google.</p>
               <div className="actions">
                 <WhatsAppLink message="Hola! Quiero mi webazo" label="hero" className="btn btn-orange"><WhatsAppIcon />Pedí tu webazo</WhatsAppLink>
                 <a className="btn btn-ghost" href="#packs">Ver packs y precios</a>
@@ -68,15 +55,15 @@ export default async function Home() {
         <Steps />
         <Testimonials items={testimonials} />
         <FaqSection faqs={faqs} />
+        <GuidesSection guides={GUIDES} />
         <Contact packs={packs} currency={currency} />
         <FinalCta />
       </main>
       <Footer />
-      <CouponPopup config={popup} currency={currency} />
+      <CouponPopup config={popup} currency={currency} packs={packs.map((p) => ({ slug: p.slug, name: p.name, price: p.price_usd, featured: p.featured }))} />
       <CartDrawer packs={packs} extras={extras} monthly={monthly} currency={currency} />
       <FloatingWhatsApp />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }} />
+      <JsonLd data={[organizationLd(packs), websiteLd(), faqLd(faqs)]} />
     </>
   );
 }

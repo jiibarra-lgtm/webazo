@@ -4,6 +4,7 @@ import PackCouponPrice from './PackCouponPrice';
 import { AddToCartButton } from './Cart';
 import { RUBROS } from '@/lib/rubros';
 import type { CurrencyConfig, Faq, Monthly, Pack, Testimonial } from '@/lib/types';
+import type { Guide } from '@/lib/guides';
 import { money, moneyAlt, moneyParts, priceNote } from '@/lib/money';
 import { DEFAULT_CURRENCY } from '@/lib/defaults';
 
@@ -183,10 +184,56 @@ export function FinalCta({ message = 'Hola! Quiero mi webazo' }: { message?: str
   );
 }
 
-export function faqJsonLd(faqs: Faq[]) {
+export function _legacyFaqJsonLd(faqs: Faq[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.question, acceptedAnswer: { '@type': 'Answer', text: f.answer } })),
   };
+}
+
+export function GuidesSection({ guides, title = 'Guías para tu negocio' }: { guides: Guide[]; title?: string }) {
+  return (
+    <section className="section" aria-labelledby="guides-title">
+      <div className="wrap">
+        <div className="section-head">
+          <h2 id="guides-title">{title}</h2>
+          <p>Respuestas claras a las dudas más comunes antes de tener tu página web.</p>
+        </div>
+        <div className="guide-grid">
+          {guides.map((g) => (
+            <a key={g.slug} className="guide-card" href={`/guias/${g.slug}`}>
+              <span className="guide-meta">{g.readMin} min de lectura</span>
+              <h3>{g.title}</h3>
+              <p>{g.description}</p>
+              <span className="more">Leer guía</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function Breadcrumbs({ items }: { items: { name: string; href?: string }[] }) {
+  return (
+    <nav className="crumbs" aria-label="Ruta de navegación">
+      <ol>
+        {items.map((it, i) => (
+          <li key={i}>{it.href ? <a href={it.href}>{it.name}</a> : <span aria-current="page">{it.name}</span>}</li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+export function RubroIntro({ heading, paragraphs }: { heading: string; paragraphs: string[] }) {
+  return (
+    <section className="section rubro-intro" aria-labelledby="intro-title">
+      <div className="wrap">
+        <h2 id="intro-title">{heading}</h2>
+        {paragraphs.map((t, i) => <p key={i}>{t}</p>)}
+      </div>
+    </section>
+  );
 }
