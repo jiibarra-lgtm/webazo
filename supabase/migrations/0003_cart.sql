@@ -44,3 +44,7 @@ alter default privileges in schema public grant usage, select on sequences to au
 
 -- v8: el popup aplica el cupón con un clic (sin pedir teléfono)
 alter table public.coupon_claims alter column phone drop not null;
+
+-- v10: etiqueta personalizable por pack
+alter table public.packs add column if not exists badge text;
+update public.packs set badge = 'El más completo' where featured and badge is null;

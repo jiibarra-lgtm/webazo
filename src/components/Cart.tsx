@@ -186,7 +186,7 @@ export function CartDrawer({ packs, extras, monthly, currency }: DrawerProps) {
               {packs.map((p) => (
                 <label key={p.slug} className={`cart-pack ${cart.pack === p.slug ? 'on' : ''}`}>
                   <input type="radio" name="cart-pack" checked={cart.pack === p.slug} onChange={() => setPack(p.slug)} />
-                  <span className="cp-name">{p.name}{p.featured && <em>Más completo</em>}</span>
+                  <span className="cp-name">{p.name}{(p.badge || p.featured) && <em>{p.badge || 'Más completo'}</em>}</span>
                   <span className="cp-price">{money(p.price_usd, currency)}</span>
                 </label>
               ))}

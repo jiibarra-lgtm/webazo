@@ -44,7 +44,7 @@ export function Packs({ packs, monthly, recommended, rubroName, currency = DEFAU
               <article key={p.id} className={cls}>
                 <div className="pack-name">
                   <h3>{p.name}</h3>
-                  {isRec ? <span className="badge">Recomendado para vos</span> : p.featured ? <span className="badge">El más completo</span> : null}
+                  {isRec ? <span className="badge">Recomendado para vos</span> : p.badge ? <span className="badge">{p.badge}</span> : p.featured ? <span className="badge">El más completo</span> : null}
                 </div>
                 {p.tagline && <p className="for">{p.tagline}</p>}
                 <div className="price">

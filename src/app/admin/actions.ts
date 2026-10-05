@@ -53,6 +53,7 @@ export async function deleteLead(fd: FormData) {
 // ── Packs ─────────────────────────────────────────────
 function packFromForm(fd: FormData) {
   return {
+    badge: str(fd, 'badge'),
     name: str(fd, 'name') ?? 'Sin nombre',
     tagline: str(fd, 'tagline'),
     price_usd: num(fd, 'price_usd') ?? 0,
@@ -66,6 +67,9 @@ function packFromForm(fd: FormData) {
   };
 }
 
+const slugify = (v: string) => v.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const back = (tab: string, ok: string) => redirect(`/admin/packs?tab=${tab}&ok=${encodeURIComponent(ok)}`);
+
 export async function savePack(fd: FormData) {
   const { supabase } = await requireAdmin();
   const id = str(fd, 'id');
@@ -73,10 +77,11 @@ export async function savePack(fd: FormData) {
     await supabase.from('packs').update(packFromForm(fd)).eq('id', id);
   } else {
     const name = str(fd, 'name') ?? 'pack';
-    const slug = (str(fd, 'slug') ?? name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    await supabase.from('packs').insert({ ...packFromForm(fd), slug });
+    const { data: last } = await supabase.from('packs').select('sort_order').order('sort_order', { ascending: false }).limit(1).maybeSingle();
+    await supabase.from('packs').insert({ ...packFromForm(fd), slug: `${slugify(str(fd, 'slug') ?? name)}`, sort_order: (last?.sort_order ?? 0) + 1 });
   }
   revalidateSite();
+  back('packs', id ? 'Pack guardado' : 'Pack creado');
 }
 
 export async function deletePack(fd: FormData) {
@@ -84,6 +89,56 @@ export async function deletePack(fd: FormData) {
   const id = str(fd, 'id');
   if (id) await supabase.from('packs').delete().eq('id', id);
   revalidateSite();
+  back('packs', 'Pack eliminado');
+}
+
+export async function duplicatePack(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  if (!id) return;
+  const { data: p } = await supabase.from('packs').select('*').eq('id', id).maybeSingle();
+  if (!p) return;
+  const { data: last } = await supabase.from('packs').select('sort_order').order('sort_order', { ascending: false }).limit(1).maybeSingle();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id: _id, created_at: _c, updated_at: _u, ...rest } = p;
+  await supabase.from('packs').insert({ ...rest, name: `${p.name} (copia)`, slug: `${p.slug}-copia-${Date.now().toString(36).slice(-4)}`, active: false, sort_order: (last?.sort_order ?? 0) + 1 });
+  revalidateSite();
+  back('packs', 'Pack duplicado (quedó oculto hasta que lo revises)');
+}
+
+async function move(table: 'packs' | 'extras', id: string, dir: 'up' | 'down') {
+  const { supabase } = await requireAdmin();
+  const { data } = await supabase.from(table).select('id, sort_order').order('sort_order').order('created_at');
+  const rows = (data ?? []) as { id: string; sort_order: number }[];
+  const i = rows.findIndex((r) => r.id === id);
+  const j = dir === 'up' ? i - 1 : i + 1;
+  if (i < 0 || j < 0 || j >= rows.length) return;
+  [rows[i], rows[j]] = [rows[j], rows[i]];
+  await Promise.all(rows.map((r, k) => supabase.from(table).update({ sort_order: k + 1 }).eq('id', r.id)));
+  revalidateSite();
+}
+
+export async function movePack(fd: FormData) {
+  const id = str(fd, 'id'); const dir = str(fd, 'dir') === 'up' ? 'up' : 'down';
+  if (id) await move('packs', id, dir);
+  back('packs', 'Orden actualizado');
+}
+export async function moveExtra(fd: FormData) {
+  const id = str(fd, 'id'); const dir = str(fd, 'dir') === 'up' ? 'up' : 'down';
+  if (id) await move('extras', id, dir);
+  back('extras', 'Orden actualizado');
+}
+export async function duplicateExtra(fd: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = str(fd, 'id');
+  if (!id) return;
+  const { data: e } = await supabase.from('extras').select('*').eq('id', id).maybeSingle();
+  if (!e) return;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id: _id, created_at: _c, updated_at: _u, ...rest } = e;
+  await supabase.from('extras').insert({ ...rest, name: `${e.name} (copia)`, slug: `${e.slug}-copia-${Date.now().toString(36).slice(-4)}`, active: false, sort_order: (e.sort_order ?? 0) + 1 });
+  revalidateSite();
+  back('extras', 'Extra duplicado (quedó oculto)');
 }
 
 export async function saveSettings(fd: FormData) {
@@ -93,6 +148,7 @@ export async function saveSettings(fd: FormData) {
     { key: 'launch_banner', value: { enabled: bool(fd, 'banner_enabled'), text: str(fd, 'banner_text') ?? '' } },
   ]);
   revalidateSite();
+  back('moneda', 'Mantenimiento y banner guardados');
 }
 
 // ── Testimonios ───────────────────────────────────────
@@ -203,6 +259,7 @@ export async function saveCurrency(fd: FormData) {
     },
   });
   revalidateSite();
+  back('moneda', 'Moneda guardada');
 }
 
 /** Trae la cotización del día desde dolarapi.com (venta). */
@@ -221,8 +278,9 @@ export async function refreshRate(fd: FormData) {
     });
     revalidateSite();
   } catch {
-    /* si falla la API, queda la cotización anterior */
+    back('moneda', 'No se pudo traer la cotización. Probá de nuevo o cargala a mano.');
   }
+  back('moneda', 'Cotización actualizada');
 }
 
 // ── Atajos (activar / desactivar) ─────────────────
@@ -271,10 +329,10 @@ export async function saveExtra(fd: FormData) {
   };
   if (id) await supabase.from('extras').update(row).eq('id', id);
   else {
-    const slug = row.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    await supabase.from('extras').insert({ ...row, slug: `${slug}-${Date.now().toString(36).slice(-4)}` });
+    await supabase.from('extras').insert({ ...row, slug: `${slugify(row.name)}-${Date.now().toString(36).slice(-4)}` });
   }
   revalidateSite();
+  back('extras', id ? 'Extra guardado' : 'Extra creado');
 }
 
 export async function deleteExtra(fd: FormData) {
@@ -282,6 +340,7 @@ export async function deleteExtra(fd: FormData) {
   const id = str(fd, 'id');
   if (id) await supabase.from('extras').delete().eq('id', id);
   revalidateSite();
+  back('extras', 'Extra eliminado');
 }
 
 export async function toggleExtraAction(fd: FormData) {

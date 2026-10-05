@@ -9,6 +9,7 @@ export type Pack = {
   features: string[];
   featured: boolean;
   cta_label: string | null;
+  badge?: string | null;
   sort_order: number;
   active: boolean;
 };
